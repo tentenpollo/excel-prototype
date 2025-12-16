@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Map, { Source, Layer, NavigationControl, FullscreenControl, ScaleControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Building2, ExternalLink, X, ArrowRight, Search } from 'lucide-react';
+import { Building2, ExternalLink, X, ArrowRight, Search, Home, MapPin } from 'lucide-react';
 import clsx from 'clsx';
 import { useApp } from '../context/AppContext';
 import { Link } from 'react-router-dom';
@@ -351,7 +351,7 @@ const TerritoryMap = () => {
                         </h2>
 
                         <p className="text-sm text-slate-400 mb-6 flex items-start">
-                            <MapIcon className="w-4 h-4 mr-2 mt-0.5 shrink-0 opacity-50" />
+                            <MapPin className="w-4 h-4 mr-2 mt-0.5 shrink-0 opacity-50" />
                             {selectedFeature.properties.address}
                         </p>
 
