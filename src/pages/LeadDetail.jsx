@@ -328,6 +328,54 @@ const LeadDetail = () => {
                         </div>
                     </div>
 
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Address</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Street</label>
+                                <input
+                                    type="text"
+                                    value={data.street || ''}
+                                    onChange={(e) => handleChange(null, 'street', e.target.value)}
+                                    className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">City</label>
+                                <input
+                                    type="text"
+                                    value={data.city || ''}
+                                    onChange={(e) => handleChange(null, 'city', e.target.value)}
+                                    className={clsx(
+                                        "block w-full text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500",
+                                        validationErrors['address.city'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300"
+                                    )}
+                                />
+                                {validationErrors['address.city'] && (
+                                    <p className="mt-1 text-xs text-red-600">{validationErrors['address.city']}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Province</label>
+                                <input
+                                    type="text"
+                                    value={data.province || ''}
+                                    onChange={(e) => handleChange(null, 'province', e.target.value)}
+                                    className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Postal Code</label>
+                                <input
+                                    type="text"
+                                    value={data.postal_code || ''}
+                                    onChange={(e) => handleChange(null, 'postal_code', e.target.value)}
+                                    className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-64 relative z-0">
                         <MapContainer
                             center={[data.address.lat, data.address.lng]}
