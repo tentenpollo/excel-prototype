@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import Map, { Source, Layer, NavigationControl, FullscreenControl, ScaleControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Building2, ExternalLink, X, ArrowRight, Search, Home, MapPin } from 'lucide-react';
@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 const TerritoryMap = () => {
     const [filterType, setFilterType] = useState('all'); // 'all', 'HQ', 'Building'
     const [selectedFeature, setSelectedFeature] = useState(null); // The clicked feature
+    const [localSearchQuery, setLocalSearchQuery] = useState(''); // Local search state
 
     const [viewState, setViewState] = useState({
         longitude: -79.3832,
@@ -20,7 +21,10 @@ const TerritoryMap = () => {
 
     const [hoverInfo, setHoverInfo] = useState(null);
 
-    const { prospects, searchQuery, setSearchQuery, colorMode, getStatusColorMap } = useApp();
+    const { prospects, colorMode, getStatusColorMap } = useApp();
+
+    // Memoize status colors to prevent recalculation
+    const statusColors = useMemo(() => getStatusColorMap(), [colorMode]);
 
     // Transform Data to GeoJSON
     // We export this logic to a stable variable or memoized function to avoid expensive re-calcs
@@ -28,9 +32,9 @@ const TerritoryMap = () => {
         const features = [];
 
         // Filter by search query
-        const filtered = searchQuery 
+        const filtered = localSearchQuery 
             ? (prospects || []).filter(lead => {
-                const searchLower = searchQuery.toLowerCase();
+                const searchLower = localSearchQuery.toLowerCase();
                 const name = (lead.company_name || lead.companyName || lead.name || '').toLowerCase();
                 const city = (lead.address?.city || '').toLowerCase();
                 const province = (lead.address?.province || '').toLowerCase();
@@ -102,7 +106,7 @@ const TerritoryMap = () => {
             type: 'FeatureCollection',
             features
         };
-    }, [prospects, searchQuery]);
+    }, [prospects, localSearchQuery]);
 
     // Calculate Connections (Spider Web)
     const connectionsData = useMemo(() => {
@@ -160,17 +164,16 @@ const TerritoryMap = () => {
     }, [selectedFeature, territoryData]);
 
 
-    // Layer Styles with Status-based coloring
-    const statusColors = getStatusColorMap();
-    
-    const buildingLayer = {
+    // Layer Styles with Status-based coloring    
+    const buildingLayer = useMemo(() => ({
         id: 'buildings-layer',
         type: 'circle',
         paint: {
             'circle-radius': [
                 'interpolate', ['linear'], ['zoom'],
-                10, 3,
-                15, 6
+                11, 2,
+                13, 4,
+                16, 7
             ],
             'circle-color': [
                 'match',
@@ -182,21 +185,22 @@ const TerritoryMap = () => {
                 statusColors.new
             ],
             'circle-stroke-color': '#000000',
-            'circle-stroke-width': 1,
-            'circle-opacity': 0.8
+            'circle-stroke-width': 0.5,
+            'circle-opacity': 0.7
         },
-        filter: ['==', 'type', 'Building'],
-        minzoom: 11 // Only show buildings when zoomed in
-    };
+        filter: filterType === 'all' || filterType === 'Building' ? ['==', 'type', 'Building'] : ['==', 'type', 'none'],
+        minzoom: 11
+    }), [statusColors, filterType]);
 
-    const hqLayer = {
+    const hqLayer = useMemo(() => ({
         id: 'hqs-layer',
         type: 'circle',
         paint: {
             'circle-radius': [
                 'interpolate', ['linear'], ['zoom'],
-                10, 4,
-                15, 12
+                9, 3,
+                11, 5,
+                15, 10
             ],
             'circle-color': [
                 'match',
@@ -208,11 +212,11 @@ const TerritoryMap = () => {
                 statusColors.new
             ],
             'circle-stroke-color': '#ffffff',
-            'circle-stroke-width': 2,
-            'circle-opacity': 1
+            'circle-stroke-width': 1.5,
+            'circle-opacity': 0.95
         },
-        filter: ['==', 'type', 'HQ']
-    };
+        filter: filterType === 'all' || filterType === 'HQ' ? ['==', 'type', 'HQ'] : ['==', 'type', 'none']
+    }), [statusColors, filterType]);
 
     const connectionLayer = {
         id: 'connections-layer',
@@ -248,17 +252,23 @@ const TerritoryMap = () => {
         const { features, point } = event;
         const hoveredFeature = features && features[0];
         const mapCanvas = event.target.getCanvas();
-        mapCanvas.style.cursor = hoveredFeature ? 'pointer' : 'default';
-
-        if (hoveredFeature) {
-            setHoverInfo({
-                feature: hoveredFeature,
-                x: point.x,
-                y: point.y
-            });
-        } else {
-            setHoverInfo(null);
+        
+        if (mapCanvas) {
+            mapCanvas.style.cursor = hoveredFeature ? 'pointer' : 'default';
         }
+
+        // Batch state update to prevent rapid re-renders
+        requestAnimationFrame(() => {
+            if (hoveredFeature) {
+                setHoverInfo({
+                    feature: hoveredFeature,
+                    x: point.x,
+                    y: point.y
+                });
+            } else {
+                setHoverInfo(null);
+            }
+        });
     }, []);
 
     return (
@@ -270,8 +280,8 @@ const TerritoryMap = () => {
                     <input
                         type="text"
                         placeholder="Search company or city..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={localSearchQuery}
+                        onChange={(e) => setLocalSearchQuery(e.target.value)}
                         className="pl-10 pr-4 py-2 bg-slate-800 text-white placeholder-slate-400 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
                     />
                 </div>
