@@ -335,8 +335,8 @@ const LeadDetail = () => {
                                 <label className="block text-xs font-medium text-slate-500 mb-1">Street</label>
                                 <input
                                     type="text"
-                                    value={data.street || ''}
-                                    onChange={(e) => handleChange(null, 'street', e.target.value)}
+                                    value={data.address?.street || ''}
+                                    onChange={(e) => handleChange('address', 'street', e.target.value)}
                                     className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                             </div>
@@ -344,8 +344,8 @@ const LeadDetail = () => {
                                 <label className="block text-xs font-medium text-slate-500 mb-1">City</label>
                                 <input
                                     type="text"
-                                    value={data.city || ''}
-                                    onChange={(e) => handleChange(null, 'city', e.target.value)}
+                                    value={data.address?.city || ''}
+                                    onChange={(e) => handleChange('address', 'city', e.target.value)}
                                     className={clsx(
                                         "block w-full text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500",
                                         validationErrors['address.city'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300"
@@ -359,8 +359,8 @@ const LeadDetail = () => {
                                 <label className="block text-xs font-medium text-slate-500 mb-1">Province</label>
                                 <input
                                     type="text"
-                                    value={data.province || ''}
-                                    onChange={(e) => handleChange(null, 'province', e.target.value)}
+                                    value={data.address?.province || ''}
+                                    onChange={(e) => handleChange('address', 'province', e.target.value)}
                                     className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                             </div>
@@ -368,8 +368,8 @@ const LeadDetail = () => {
                                 <label className="block text-xs font-medium text-slate-500 mb-1">Postal Code</label>
                                 <input
                                     type="text"
-                                    value={data.postal_code || ''}
-                                    onChange={(e) => handleChange(null, 'postal_code', e.target.value)}
+                                    value={data.address?.postal_code || ''}
+                                    onChange={(e) => handleChange('address', 'postal_code', e.target.value)}
                                     className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                             </div>
