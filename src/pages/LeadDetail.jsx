@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, Save, Building, Phone, Mail, MapPin, Clock, AlertTriangle, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Building, Phone, Mail, MapPin, Clock, AlertTriangle, Plus, Pencil, Trash2, Globe } from 'lucide-react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import clsx from 'clsx';
 import 'leaflet/dist/leaflet.css';
@@ -309,6 +309,21 @@ const LeadDetail = () => {
                                 {validationErrors['contact_info.phone'] && (
                                     <p className="mt-1 text-xs text-red-600">{validationErrors['contact_info.phone']}</p>
                                 )}
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Website</label>
+                                <div className="relative rounded-md shadow-sm">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Globe className="h-4 w-4 text-slate-400" />
+                                    </div>
+                                    <input
+                                        type="url"
+                                        value={data.website || ''}
+                                        onChange={(e) => handleChange(null, 'website', e.target.value)}
+                                        placeholder="https://example.com"
+                                        className="block w-full pl-10 text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
