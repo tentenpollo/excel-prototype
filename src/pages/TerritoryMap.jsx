@@ -11,6 +11,8 @@ const TerritoryMap = () => {
     const [selectedFeature, setSelectedFeature] = useState(null); // The clicked feature
     const [localSearchQuery, setLocalSearchQuery] = useState(''); // Local search state
     const [isRefreshing, setIsRefreshing] = useState(true); // Loading state
+    const [isLoadingOverlayVisible, setIsLoadingOverlayVisible] = useState(true);
+    const [loadingProgress, setLoadingProgress] = useState(0);
 
     const [viewState, setViewState] = useState({
         longitude: -79.3832,
@@ -27,11 +29,43 @@ const TerritoryMap = () => {
     // Refresh data when component mounts
     useEffect(() => {
         const loadFreshData = async () => {
+            // show overlay and start progress simulation
             setIsRefreshing(true);
-            await refreshProspects();
-            setIsRefreshing(false);
+            setIsLoadingOverlayVisible(true);
+            setLoadingProgress(0);
+
+            let intervalId;
+            // start a simulated progress bar that slowly climbs to 90-95%
+            intervalId = setInterval(() => {
+                setLoadingProgress(prev => {
+                    const next = prev + (Math.random() * 6 + 2);
+                    return next >= 95 ? 95 : Math.round(next);
+                });
+            }, 300);
+
+            try {
+                await refreshProspects();
+                // on success, fill to 100%
+                setLoadingProgress(100);
+                // small delay so users see completion
+                await new Promise(res => setTimeout(res, 450));
+            } catch (err) {
+                // in case of failure, show partial state and keep overlay so user notices
+                console.error('Failed to refresh prospects:', err);
+            } finally {
+                setIsRefreshing(false);
+                // hide overlay after a short fade-out
+                setTimeout(() => setIsLoadingOverlayVisible(false), 200);
+                if (intervalId) clearInterval(intervalId);
+            }
         };
         loadFreshData();
+
+        // cleanup if the component unmounts while loading
+        return () => {
+            setIsRefreshing(false);
+            setIsLoadingOverlayVisible(false);
+        };
     }, []);
 
     // Memoize status colors to prevent recalculation
@@ -285,12 +319,57 @@ const TerritoryMap = () => {
     return (
         <div className="relative w-full h-[calc(100vh-64px)] bg-slate-900 overflow-hidden">
             {/* Loading Screen */}
-            {isRefreshing && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900">
-                    <div className="text-center">
-                        <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
-                        <h2 className="text-xl font-semibold text-white mb-2">Loading Territory Data</h2>
-                        <p className="text-slate-400 text-sm">Fetching latest prospect information...</p>
+            {isLoadingOverlayVisible && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-slate-900/90 to-slate-800/80 backdrop-blur-sm">
+                    <div className="w-full max-w-4xl p-6">
+                        <div className="bg-slate-900/90 rounded-xl border border-slate-800 shadow-2xl overflow-hidden">
+                            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                <div className="md:col-span-2">
+                                    <h2 className="text-white text-2xl font-bold mb-2">Loading Territory Map</h2>
+                                    <p className="text-slate-300 mb-4">Fetching latest prospect and property information. The map will appear once data is fully loaded.</p>
+
+                                    {/* Map skeleton */}
+                                    <div className="w-full rounded-lg overflow-hidden bg-slate-800 h-44 mb-4">
+                                        <div className="h-full w-full bg-[linear-gradient(90deg,#111827_0%,#1f2937_50%,#111827_100%)] animate-pulse" />
+                                    </div>
+
+                                    {/* Progress Bar */}
+                                    <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
+                                        <div className="bg-amber-400 h-2 rounded-full transition-all" style={{ width: `${loadingProgress}%` }} />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-slate-300">{loadingProgress}%</div>
+                                        <div className="text-sm text-slate-400">{isRefreshing ? 'Loading...' : 'Finalizing...'}</div>
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-1 flex flex-col items-center justify-center">
+                                    <div className="text-slate-300 text-sm mb-4">Want faster access?</div>
+                                    <button
+                                        onClick={() => setIsLoadingOverlayVisible(false)}
+                                        className="bg-white text-slate-900 px-4 py-2 rounded-lg font-medium shadow"
+                                    >
+                                        Continue in background
+                                    </button>
+
+                                    <button
+                                        onClick={async () => {
+                                            // manual refresh
+                                            setIsLoadingOverlayVisible(true);
+                                            setIsRefreshing(true);
+                                            setLoadingProgress(0);
+                                            await refreshProspects();
+                                            setLoadingProgress(100);
+                                            setTimeout(() => setIsLoadingOverlayVisible(false), 300);
+                                            setIsRefreshing(false);
+                                        }}
+                                        className="mt-3 text-sm text-slate-300 underline"
+                                    >
+                                        Refresh Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

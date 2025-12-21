@@ -21,6 +21,9 @@ const LeadDetail = () => {
     const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
     const [editingBuildingIndex, setEditingBuildingIndex] = useState(null);
 
+    // Portfolio full-width modal
+    const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
+
     useEffect(() => {
         const found = prospects.find(p => p.id === id);
         if (found) {
@@ -179,6 +182,83 @@ const LeadDetail = () => {
                 onSave={handleSaveBuilding}
                 initialData={editingBuildingIndex !== null ? data.portfolio_stats.assets[editingBuildingIndex] : null}
             />
+
+            {/* Portfolio Full-Width Modal */}
+            {isPortfolioModalOpen && (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-start justify-center p-6">
+                    <div className="bg-white rounded-2xl w-full max-w-6xl h-[85vh] overflow-auto shadow-2xl relative">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                            <h3 className="text-lg font-semibold">Portfolio — {data.company_name}</h3>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsPortfolioModalOpen(false)}
+                                    className="text-slate-500 hover:text-slate-700 px-3 py-2 rounded-md"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-sm text-slate-500">{data.portfolio_stats.total_buildings || 0} Buildings</div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleAddBuilding}
+                                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                                    >
+                                        <Plus className="w-3 h-3 mr-2" /> Add Building
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Reuse same table layout but full width */}
+                            {data.portfolio_stats.assets && data.portfolio_stats.assets.length > 0 ? (
+                                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+                                    <table className="min-w-full divide-y divide-slate-300">
+                                        <thead className="bg-slate-50">
+                                            <tr>
+                                                <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 uppercase">Property Name</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Address</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Units</th>
+                                                <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200 bg-white">
+                                            {data.portfolio_stats.assets.map((asset, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50">
+                                                    <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900">{asset.name}</td>
+                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.address}</td>
+                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.units}</td>
+                                                    <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
+                                                        <button onClick={() => { handleEditBuilding(idx); setIsPortfolioModalOpen(false); }} className="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                            <Pencil className="w-4 h-4" />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteBuilding(idx)} className="text-rose-600 hover:text-rose-900">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+                                    <Building className="mx-auto h-8 w-8 text-slate-400" />
+                                    <p className="mt-2 text-sm text-slate-500">No buildings listed.</p>
+                                    <button
+                                        onClick={() => { handleAddBuilding(); setIsPortfolioModalOpen(false); }}
+                                        className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                                    >
+                                        Add your first building
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
@@ -408,6 +488,13 @@ const LeadDetail = () => {
                                     className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 >
                                     <Plus className="w-3 h-3 mr-1" /> Add
+                                </button>
+
+                                <button
+                                    onClick={() => setIsPortfolioModalOpen(true)}
+                                    className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    Full Width
                                 </button>
                             </div>
                         </div>
