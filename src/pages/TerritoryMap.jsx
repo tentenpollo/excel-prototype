@@ -58,44 +58,42 @@ const TerritoryMap = () => {
                         status: lead.status || 'new',
                         name: lead.company_name || lead.companyName || lead.name || 'Company',
                         buildingsCount: lead.portfolio_stats?.assets?.length || 0,
-                        address: `${lead.address?.city ?? ''}, ${lead.address?.province ?? ''}`,
-                        rawData: lead // Store full data for modal
+                        address: `${lead.address?.city ?? ''}, ${lead.address?.province ?? ''}`
                     }
                 });
 
-                // 2. Process Assets (Buildings)
+                // Assets (buildings)
                 const assets = lead.portfolio_stats?.assets || lead.portfolio_assets || [];
                 assets.forEach((asset, assetIndex) => {
                     let assetLng = asset.lng ?? asset.longitude ?? null;
                     let assetLat = asset.lat ?? asset.latitude ?? null;
 
-                    // Fallback Logic: Inherit from HQ if missing + Jitter
-                    if (!assetLng || !assetLat) {
+                    // If missing coords, jitter around HQ to avoid overlap
+                    if ((assetLng === null || assetLat === null) && lng !== undefined && lat !== undefined) {
                         const JITTER_AMOUNT = 0.0005;
-                        assetLng = lng + (Math.random() - 0.5) * JITTER_AMOUNT;
-                        assetLat = lat + (Math.random() - 0.5) * JITTER_AMOUNT;
+                        assetLng = assetLng ?? lng + (Math.random() - 0.5) * JITTER_AMOUNT;
+                        assetLat = assetLat ?? lat + (Math.random() - 0.5) * JITTER_AMOUNT;
                     }
 
-                    features.push({
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [assetLng, assetLat]
-                        },
-                        properties: {
-                            id: `asset-${lead.id}-${assetIndex}`,
-                            type: 'Building',
-                            status: lead.status || 'new',
-                            name: asset['Building Name'] ?? asset.name ?? 'Unknown Building',
-                            parentCompany: lead.company_name ?? lead.companyName ?? 'Company',
-                            address: asset.Address ?? asset.address ?? lead.address?.city ?? '',
-                            units: asset.units ?? 0,
-                            parentId: hqId, // Link back to HQ
-                            parentLng: lng,
-                            parentLat: lat,
-                            assetData: asset // Store asset data
-                        }
-                    });
+                    // Only include if we have coordinates
+                    if (assetLng !== null && assetLat !== null) {
+                        features.push({
+                            type: 'Feature',
+                            geometry: { type: 'Point', coordinates: [assetLng, assetLat] },
+                            properties: {
+                                id: `asset-${lead.id}-${assetIndex}`,
+                                type: 'Building',
+                                status: lead.status || 'new',
+                                name: asset['Building Name'] ?? asset.name ?? 'Unknown Building',
+                                parentCompany: lead.company_name ?? lead.companyName ?? 'Company',
+                                address: asset.Address ?? asset.address ?? lead.address?.city ?? '',
+                                units: asset.units ?? 0,
+                                parentId: hqId,
+                                parentLng: lng,
+                                parentLat: lat
+                            }
+                        });
+                    }
                 });
             }
         });
@@ -187,7 +185,8 @@ const TerritoryMap = () => {
             'circle-stroke-width': 1,
             'circle-opacity': 0.8
         },
-        filter: filterType === 'all' ? ['==', 'type', 'Building'] : ['all', ['==', 'type', 'Building'], ['==', 'type', filterType]]
+        filter: ['==', 'type', 'Building'],
+        minzoom: 11 // Only show buildings when zoomed in
     };
 
     const hqLayer = {
@@ -212,7 +211,7 @@ const TerritoryMap = () => {
             'circle-stroke-width': 2,
             'circle-opacity': 1
         },
-        filter: filterType === 'all' ? ['==', 'type', 'HQ'] : ['all', ['==', 'type', 'HQ'], ['==', 'type', filterType]]
+        filter: ['==', 'type', 'HQ']
     };
 
     const connectionLayer = {
