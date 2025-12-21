@@ -350,10 +350,44 @@ export const AppProvider = ({ children }) => {
         'lost': '#EF4444'       // red
     });
 
+    // Refresh data from Supabase
+    const refreshProspects = async () => {
+        try {
+            const [prospectsResult, assetsResult] = await Promise.all([
+                supabase.from('prospects').select('*'),
+                supabase.from('assets').select('*')
+            ]);
+
+            if (prospectsResult.error) {
+                console.warn('Failed to fetch prospects:', prospectsResult.error);
+                return false;
+            }
+
+            const prospectsData = prospectsResult.data || [];
+            const assetsData = assetsResult.data || [];
+
+            if (prospectsData.length > 0) {
+                const transformed = prospectsData.map(prospect => {
+                    const prospectAssets = assetsData.filter(asset => asset.prospect_id === prospect.id);
+                    return transformSupabaseRow(prospect, prospectAssets);
+                });
+                
+                setProspects(transformed);
+                localStorage.setItem('prospects', JSON.stringify(transformed));
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.error('Refresh prospects error:', err);
+            return false;
+        }
+    };
+
     const value = {
         prospects,
         setProspects,
         isHydrating,
+        refreshProspects,
         searchQuery,
         setSearchQuery,
         colorMode,

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import Map, { Source, Layer, NavigationControl, FullscreenControl, ScaleControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Building2, ExternalLink, X, ArrowRight, Search, Home, MapPin } from 'lucide-react';
@@ -10,6 +10,7 @@ const TerritoryMap = () => {
     const [filterType, setFilterType] = useState('all'); // 'all', 'HQ', 'Building'
     const [selectedFeature, setSelectedFeature] = useState(null); // The clicked feature
     const [localSearchQuery, setLocalSearchQuery] = useState(''); // Local search state
+    const [isRefreshing, setIsRefreshing] = useState(true); // Loading state
 
     const [viewState, setViewState] = useState({
         longitude: -79.3832,
@@ -21,7 +22,17 @@ const TerritoryMap = () => {
 
     const [hoverInfo, setHoverInfo] = useState(null);
 
-    const { prospects, colorMode, getStatusColorMap } = useApp();
+    const { prospects, colorMode, getStatusColorMap, refreshProspects } = useApp();
+
+    // Refresh data when component mounts
+    useEffect(() => {
+        const loadFreshData = async () => {
+            setIsRefreshing(true);
+            await refreshProspects();
+            setIsRefreshing(false);
+        };
+        loadFreshData();
+    }, []);
 
     // Memoize status colors to prevent recalculation
     const statusColors = useMemo(() => getStatusColorMap(), [colorMode]);
@@ -273,6 +284,17 @@ const TerritoryMap = () => {
 
     return (
         <div className="relative w-full h-[calc(100vh-64px)] bg-slate-900 overflow-hidden">
+            {/* Loading Screen */}
+            {isRefreshing && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+                        <h2 className="text-xl font-semibold text-white mb-2">Loading Territory Data</h2>
+                        <p className="text-slate-400 text-sm">Fetching latest prospect information...</p>
+                    </div>
+                </div>
+            )}
+
             {/* Search Bar & Filters */}
             <div className="absolute top-4 left-4 z-30 flex gap-3 items-center">
                 <div className="relative">
