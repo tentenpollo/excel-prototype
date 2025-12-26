@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { MapPin, Upload, Plus, Trash2, Clock, ArrowLeft } from 'lucide-react';
+import { MapPin, Upload, Plus, Trash2, Clock, ArrowLeft, Building } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { supabase } from '../lib/supabaseClient';
 import L from 'leaflet';
@@ -86,14 +86,22 @@ const BuildingDetail = () => {
         const { data, error } = await supabase.storage
             .from('building-photos')
             .list(`asset_${assetId}`);
+        
+        console.log('Loading photos for asset:', assetId, { data, error });
+        
         if (data && !error) {
-            const photoUrls = data.map(file => ({
-                name: file.name,
-                url: supabase.storage
-                    .from('building-photos')
-                    .getPublicUrl(`asset_${assetId}/${file.name}`).data.publicUrl
-            }));
+            const photoUrls = data
+                .filter(file => file.name !== '.emptyFolderPlaceholder') // Filter out placeholder
+                .map(file => ({
+                    name: file.name,
+                    url: supabase.storage
+                        .from('building-photos')
+                        .getPublicUrl(`asset_${assetId}/${file.name}`).data.publicUrl
+                }));
+            console.log('Photo URLs:', photoUrls);
             setPhotos(photoUrls);
+        } else if (error) {
+            console.error('Error loading photos:', error);
         }
     };
 
@@ -127,17 +135,26 @@ const BuildingDetail = () => {
         const files = Array.from(e.target.files);
         if (!files.length || !building) return;
 
+        console.log('Uploading photos for building:', building.id);
         setUploading(true);
+        
         for (const file of files) {
             const fileName = `${Date.now()}-${file.name}`;
-            const { error } = await supabase.storage
+            console.log('Uploading file:', fileName);
+            
+            const { data, error } = await supabase.storage
                 .from('building-photos')
                 .upload(`asset_${building.id}/${fileName}`, file);
 
-            if (!error) {
-                await loadPhotos(building.id);
+            if (error) {
+                console.error('Photo upload error:', error);
+                alert(`Failed to upload photo: ${error.message}. Make sure the 'building-photos' bucket exists in Supabase Storage.`);
+            } else {
+                console.log('Photo uploaded successfully:', data);
             }
         }
+        
+        await loadPhotos(building.id);
         setUploading(false);
     };
 
@@ -163,16 +180,35 @@ const BuildingDetail = () => {
 
     return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
+            {/* Header with Profile Photo */}
+            <div className="flex items-start justify-between mb-6 gap-6">
+                <div className="flex items-start gap-4 flex-1">
                     <button
                         onClick={() => navigate('/buildings')}
-                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors mt-1"
                     >
                         <ArrowLeft className="w-5 h-5 text-slate-600" />
                     </button>
-                    <div>
+                    
+                    {/* Profile Photo */}
+                    {photos.length > 0 ? (
+                        <div className="relative group flex-shrink-0">
+                            <img
+                                src={photos[0].url}
+                                alt={building.name}
+                                className="w-24 h-24 rounded-lg object-cover border-2 border-slate-200 shadow-sm"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                                <span className="text-white text-xs font-medium">Profile Photo</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-24 h-24 rounded-lg bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center flex-shrink-0">
+                            <Building className="w-10 h-10 text-slate-400" />
+                        </div>
+                    )}
+                    
+                    <div className="flex-1">
                         <h1 className="text-3xl font-bold text-slate-900">{building.name || 'Untitled Building'}</h1>
                         <p className="text-slate-600 mt-1">{building.address}</p>
                     </div>

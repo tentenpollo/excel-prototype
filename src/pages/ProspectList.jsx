@@ -37,6 +37,12 @@ const ProspectList = () => {
                 if (sortConfig.key === 'portfolio_size') {
                     aValue = a.portfolio_stats.total_buildings;
                     bValue = b.portfolio_stats.total_buildings;
+                } else if (sortConfig.key === 'avg_age') {
+                    aValue = a.portfolio_stats.avg_building_age || 0;
+                    bValue = b.portfolio_stats.avg_building_age || 0;
+                } else if (sortConfig.key === 'old_buildings') {
+                    aValue = (a.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 40).length;
+                    bValue = (b.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 40).length;
                 }
 
                 if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -107,7 +113,7 @@ const ProspectList = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
             <AddToListModal
                 isOpen={isAddToListModalOpen}
                 onClose={() => setIsAddToListModalOpen(false)}
@@ -199,6 +205,13 @@ const ProspectList = () => {
                                 </th>
                                 <th
                                     className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    onClick={() => requestSort('old_buildings')}
+                                    title="Buildings 40+ years old"
+                                >
+                                    <div className="flex items-center">Needs Reno {getSortIcon('old_buildings')}</div>
+                                </th>
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
                                     onClick={() => requestSort('avg_age')}
                                 >
                                     <div className="flex items-center">Avg Age {getSortIcon('avg_age')}</div>
@@ -248,6 +261,21 @@ const ProspectList = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                             {prospect.portfolio_stats.total_buildings} bldgs
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {(() => {
+                                                const oldBuildings = (prospect.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 40).length;
+                                                const veryOldBuildings = (prospect.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 50).length;
+                                                if (oldBuildings === 0) return <span className="text-sm text-slate-400">-</span>;
+                                                return (
+                                                    <span className={clsx(
+                                                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                                        veryOldBuildings > 0 ? "bg-red-100 text-red-800" : "bg-orange-100 text-orange-800"
+                                                    )}>
+                                                        {oldBuildings} {oldBuildings === 1 ? 'bldg' : 'bldgs'}
+                                                    </span>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                             {prospect.portfolio_stats.avg_building_age ? `${prospect.portfolio_stats.avg_building_age} yrs` : '-'}

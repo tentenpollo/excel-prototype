@@ -45,46 +45,11 @@ const TerritoryMap = () => {
 
     const { prospects, colorMode, getStatusColorMap, refreshProspects } = useApp();
 
-    // Refresh data when component mounts
+    // Skip auto-refresh on mount - use cached data for instant load
     useEffect(() => {
-        const loadFreshData = async () => {
-            // show overlay and start progress simulation
-            setIsRefreshing(true);
-            setIsLoadingOverlayVisible(true);
-            setLoadingProgress(0);
-
-            let intervalId;
-            // start a simulated progress bar that slowly climbs to 90-95%
-            intervalId = setInterval(() => {
-                setLoadingProgress(prev => {
-                    const next = prev + (Math.random() * 6 + 2);
-                    return next >= 95 ? 95 : Math.round(next);
-                });
-            }, 300);
-
-            try {
-                await refreshProspects();
-                // on success, fill to 100%
-                setLoadingProgress(100);
-                // small delay so users see completion
-                await new Promise(res => setTimeout(res, 450));
-            } catch (err) {
-                // in case of failure, show partial state and keep overlay so user notices
-                console.error('Failed to refresh prospects:', err);
-            } finally {
-                setIsRefreshing(false);
-                // hide overlay after a short fade-out
-                setTimeout(() => setIsLoadingOverlayVisible(false), 200);
-                if (intervalId) clearInterval(intervalId);
-            }
-        };
-        loadFreshData();
-
-        // cleanup if the component unmounts while loading
-        return () => {
-            setIsRefreshing(false);
-            setIsLoadingOverlayVisible(false);
-        };
+        // Just hide the loading overlay immediately since we're using cached data
+        setIsRefreshing(false);
+        setIsLoadingOverlayVisible(false);
     }, []);
 
     // Memoize status colors to prevent recalculation

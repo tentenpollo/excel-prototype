@@ -16,6 +16,7 @@ const LeadDetail = () => {
     const [isDirty, setIsDirty] = useState(false);
     const [saveStatus, setSaveStatus] = useState('idle'); // idle, saving, saved, error
     const [validationErrors, setValidationErrors] = useState({});
+    const [showMap, setShowMap] = useState(false);
 
     // Building Modal State
     const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
@@ -175,7 +176,7 @@ const LeadDetail = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500">
             <BuildingModal
                 isOpen={isBuildingModalOpen}
                 onClose={() => setIsBuildingModalOpen(false)}
@@ -457,17 +458,32 @@ const LeadDetail = () => {
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-64 relative z-0">
-                        <MapContainer
-                            center={[data.address.lat, data.address.lng]}
-                            zoom={13}
-                            scrollWheelZoom={false}
-                            className="h-full w-full"
-                        >
-                            <TileLayer
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            />
-                            <Marker position={[data.address.lat, data.address.lng]} />
-                        </MapContainer>
+                        {!showMap ? (
+                            <div 
+                                className="h-full w-full flex items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+                                onClick={() => setShowMap(true)}
+                            >
+                                <div className="text-center">
+                                    <MapPin className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                                    <p className="text-sm text-slate-600 font-medium">Click to load map</p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {data.address.city}, {data.address.province}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <MapContainer
+                                center={[data.address.lat, data.address.lng]}
+                                zoom={13}
+                                scrollWheelZoom={false}
+                                className="h-full w-full"
+                            >
+                                <TileLayer
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                />
+                                <Marker position={[data.address.lat, data.address.lng]} />
+                            </MapContainer>
+                        )}
                     </div>
                 </div>
 
@@ -483,18 +499,21 @@ const LeadDetail = () => {
                                 <span className="bg-slate-100 text-slate-600 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
                                     {data.portfolio_stats.total_buildings || 0} Bldgs
                                 </span>
+                                {(() => {
+                                    const oldBuildings = (data.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 40).length;
+                                    if (oldBuildings > 0) {
+                                        return (
+                                            <span className="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
+                                                {oldBuildings} Need Reno
+                                            </span>
+                                        );
+                                    }
+                                })()}
                                 <button
                                     onClick={handleAddBuilding}
                                     className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 >
                                     <Plus className="w-3 h-3 mr-1" /> Add
-                                </button>
-
-                                <button
-                                    onClick={() => setIsPortfolioModalOpen(true)}
-                                    className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                    Full Width
                                 </button>
                             </div>
                         </div>
@@ -506,15 +525,31 @@ const LeadDetail = () => {
                                         <tr>
                                             <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 uppercase">Property Name</th>
                                             <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Address</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Year Built</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Age</th>
                                             <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Units</th>
                                             <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200 bg-white">
                                         {data.portfolio_stats.assets.map((asset, idx) => (
-                                            <tr key={idx}>
+                                            <tr key={idx} className={clsx(asset.age && asset.age >= 50 ? "bg-red-50" : asset.age && asset.age >= 40 ? "bg-orange-50" : "")}>
                                                 <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900">{asset.name}</td>
                                                 <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.address}</td>
+                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.year_built || '-'}</td>
+                                                <td className="whitespace-nowrap px-3 py-3 text-sm">
+                                                    {asset.age ? (
+                                                        <span className={clsx(
+                                                            "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+                                                            asset.age >= 50 ? "bg-red-100 text-red-800" :
+                                                            asset.age >= 40 ? "bg-orange-100 text-orange-800" :
+                                                            asset.age >= 30 ? "bg-yellow-100 text-yellow-800" :
+                                                            "bg-green-100 text-green-800"
+                                                        )}>
+                                                            {asset.age} yrs
+                                                        </span>
+                                                    ) : '-'}
+                                                </td>
                                                 <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.units}</td>
                                                 <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
                                                     <button onClick={() => handleEditBuilding(idx)} className="text-indigo-600 hover:text-indigo-900 mr-3">
