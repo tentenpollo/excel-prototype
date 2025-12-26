@@ -4,9 +4,10 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Building2, ExternalLink, X, ArrowRight, Search, Home, MapPin } from 'lucide-react';
 import clsx from 'clsx';
 import { useApp } from '../context/AppContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const TerritoryMap = () => {
+    const [searchParams] = useSearchParams();
     const [filterType, setFilterType] = useState('all'); // 'all', 'HQ', 'Building'
     const [selectedFeature, setSelectedFeature] = useState(null); // The clicked feature
     const [localSearchQuery, setLocalSearchQuery] = useState(''); // Local search state
@@ -14,12 +15,30 @@ const TerritoryMap = () => {
     const [isLoadingOverlayVisible, setIsLoadingOverlayVisible] = useState(true);
     const [loadingProgress, setLoadingProgress] = useState(0);
 
-    const [viewState, setViewState] = useState({
-        longitude: -79.3832,
-        latitude: 43.6532,
-        zoom: 11,
-        pitch: 45,
-        bearing: 0
+    const [viewState, setViewState] = useState(() => {
+        // Check for location parameters in URL
+        const latitude = searchParams.get('latitude');
+        const longitude = searchParams.get('longitude');
+        const zoom = searchParams.get('zoom');
+
+        if (latitude && longitude) {
+            return {
+                longitude: parseFloat(longitude),
+                latitude: parseFloat(latitude),
+                zoom: zoom ? parseFloat(zoom) : 15,
+                pitch: 45,
+                bearing: 0
+            };
+        }
+
+        // Default view (Toronto)
+        return {
+            longitude: -79.3832,
+            latitude: 43.6532,
+            zoom: 11,
+            pitch: 45,
+            bearing: 0
+        };
     });
 
     const [hoverInfo, setHoverInfo] = useState(null);
@@ -137,9 +156,13 @@ const TerritoryMap = () => {
                                 parentCompany: lead.company_name ?? lead.companyName ?? 'Company',
                                 address: asset.Address ?? asset.address ?? lead.address?.city ?? '',
                                 units: asset.units ?? 0,
+                                yearBuilt: asset.year_built ?? null,
+                                age: asset.age ?? (asset.year_built ? new Date().getFullYear() - asset.year_built : null),
                                 parentId: hqId,
                                 parentLng: lng,
-                                parentLat: lat
+                                parentLat: lat,
+                                prospectId: lead.id,
+                                assetId: asset.id
                             }
                         });
                     }
@@ -485,30 +508,56 @@ const TerritoryMap = () => {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                                    <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Owned By</div>
-                                    <div
-                                        className="text-indigo-400 font-medium hover:text-indigo-300 cursor-pointer flex items-center"
-                                        onClick={() => {
-                                            // Find HQ feature and select it
-                                            const parentId = selectedFeature.properties.parentId;
-                                            const hqFeature = territoryData.features.find(f => f.properties.id === parentId);
-                                            if (hqFeature) {
-                                                setSelectedFeature(hqFeature);
-                                                // Fly to it
-                                                setViewState(prev => ({
-                                                    ...prev,
-                                                    longitude: hqFeature.geometry.coordinates[0],
-                                                    latitude: hqFeature.geometry.coordinates[1],
-                                                    zoom: 12
-                                                }));
-                                            }
-                                        }}
-                                    >
-                                        {selectedFeature.properties.parentCompany}
-                                        <ArrowRight className="w-3 h-3 ml-1" />
+                                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 space-y-3">
+                                    <div>
+                                        <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Owned By</div>
+                                        <div
+                                            className="text-indigo-400 font-medium hover:text-indigo-300 cursor-pointer flex items-center"
+                                            onClick={() => {
+                                                // Find HQ feature and select it
+                                                const parentId = selectedFeature.properties.parentId;
+                                                const hqFeature = territoryData.features.find(f => f.properties.id === parentId);
+                                                if (hqFeature) {
+                                                    setSelectedFeature(hqFeature);
+                                                    // Fly to it
+                                                    setViewState(prev => ({
+                                                        ...prev,
+                                                        longitude: hqFeature.geometry.coordinates[0],
+                                                        latitude: hqFeature.geometry.coordinates[1],
+                                                        zoom: 12
+                                                    }));
+                                                }
+                                            }}
+                                        >
+                                            {selectedFeature.properties.parentCompany}
+                                            <ArrowRight className="w-3 h-3 ml-1" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Year Built</div>
+                                        <div className="text-slate-200 font-medium">{selectedFeature.properties.yearBuilt || 'Unknown'}</div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Age</div>
+                                        <div className="text-slate-200 font-medium">{selectedFeature.properties.age ? `${selectedFeature.properties.age} years old` : 'Unknown'}</div>
                                     </div>
                                 </div>
+
+                                {selectedFeature.properties.prospectId && selectedFeature.properties.assetId ? (
+                                    <Link
+                                        to={`/buildings/${selectedFeature.properties.prospectId}/${selectedFeature.properties.assetId}`}
+                                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl flex items-center justify-center transition-all shadow-lg shadow-indigo-500/20"
+                                    >
+                                        View Building Details
+                                        <ExternalLink className="w-4 h-4 ml-2" />
+                                    </Link>
+                                ) : (
+                                    <div className="text-center text-slate-500 text-sm py-3">
+                                        Building details not available
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

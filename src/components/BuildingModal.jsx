@@ -5,14 +5,16 @@ const BuildingModal = ({ isOpen, onClose, onSave, initialData }) => {
     const [formData, setFormData] = useState({
         name: '',
         address: '',
-        units: 0
+        units: 0,
+        year_built: null,
+        age: null
     });
 
     useEffect(() => {
         if (isOpen && initialData) {
             setFormData(initialData);
         } else if (isOpen) {
-            setFormData({ name: '', address: '', units: 0 });
+            setFormData({ name: '', address: '', units: 0, year_built: null, age: null });
         }
     }, [isOpen, initialData]);
 
@@ -86,6 +88,26 @@ const BuildingModal = ({ isOpen, onClose, onSave, initialData }) => {
                                 value={formData.units}
                                 onChange={e => setFormData({ ...formData, units: parseInt(e.target.value) || 0 })}
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Year Built</label>
+                            <input
+                                type="number"
+                                min="1000"
+                                max={new Date().getFullYear()}
+                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border"
+                                placeholder="e.g., 2001"
+                                value={formData.year_built || ''}
+                                onChange={e => setFormData({ ...formData, year_built: e.target.value ? parseInt(e.target.value) : null })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Age (Years)</label>
+                            <div className="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border bg-gray-50 text-gray-600">
+                                {formData.year_built 
+                                    ? `${new Date().getFullYear() - formData.year_built} years old` 
+                                    : 'Enter year built to see age'}
+                            </div>
                         </div>
                         <div className="mt-5 sm:mt-6">
                             <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">

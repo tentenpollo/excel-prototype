@@ -198,6 +198,12 @@ const ProspectList = () => {
                                     <div className="flex items-center">Portfolio {getSortIcon('portfolio_size')}</div>
                                 </th>
                                 <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    onClick={() => requestSort('avg_age')}
+                                >
+                                    <div className="flex items-center">Avg Age {getSortIcon('avg_age')}</div>
+                                </th>
+                                <th
                                     className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
                                 >
                                     Last Contact
@@ -242,6 +248,9 @@ const ProspectList = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                             {prospect.portfolio_stats.total_buildings} bldgs
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                            {prospect.portfolio_stats.avg_building_age ? `${prospect.portfolio_stats.avg_building_age} yrs` : '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                             {prospect.last_contact_date ? new Date(prospect.last_contact_date).toLocaleDateString() : '-'}

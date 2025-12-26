@@ -14,6 +14,20 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
         }
     }
     
+    // Compute per-asset age from year_built if not present
+    const currentYear = new Date().getFullYear();
+    assets = assets.map(a => ({
+        ...a,
+        age: a.age ?? (a.year_built ? currentYear - a.year_built : null),
+        year_built: a.year_built ?? null
+    }));
+
+    // Calculate average age from assets
+    const assetsWithAge = assets.filter(a => a.year_built);
+    const avgAge = assetsWithAge.length > 0 
+        ? Math.round(assetsWithAge.reduce((sum, a) => sum + (a.age || 0), 0) / assetsWithAge.length)
+        : null;
+    
     return {
         id: row.id,
         company_name: row.company_name,
@@ -39,6 +53,7 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
         portfolio_stats: {
             total_buildings: assets.length || row.portfolio_total_buildings || 0,
             total_units: 0,
+            avg_building_age: avgAge,
             assets: assets
         },
         website: row.website || '',

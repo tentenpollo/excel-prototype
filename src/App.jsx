@@ -8,6 +8,8 @@ import ProspectList from './pages/ProspectList';
 import LeadDetail from './pages/LeadDetail';
 import CustomList from './pages/CustomList';
 import DataManager from './pages/DataManager';
+import BuildingsList from './pages/BuildingsList';
+import BuildingDetail from './pages/BuildingDetail';
 import 'leaflet/dist/leaflet.css';
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
             <Route path="map" element={<TerritoryMap />} />
             <Route path="prospects" element={<ProspectList />} />
             <Route path="prospects/:id" element={<LeadDetail />} />
+            <Route path="buildings" element={<BuildingsList />} />
+            <Route path="buildings/:prospectId/:buildingId" element={<BuildingDetail />} />
             <Route path="lists/:id" element={<CustomList />} />
             <Route path="manage" element={<DataManager />} />
             <Route path="*" element={<Navigate to="/" replace />} />

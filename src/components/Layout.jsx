@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Map as MapIcon, List, Settings, Menu, X, Database, Plus, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Map as MapIcon, List, Settings, Menu, X, Database, Plus, FolderOpen, Building } from 'lucide-react';
 import clsx from 'clsx';
 import { useApp } from '../context/AppContext';
 import CreateListModal from './CreateListModal';
@@ -15,6 +15,7 @@ const Layout = () => {
         { to: '/', label: 'Dashboard', icon: LayoutDashboard },
         { to: '/map', label: 'Territory Map', icon: MapIcon },
         { to: '/prospects', label: 'Prospect List', icon: List },
+        { to: '/buildings', label: 'Buildings', icon: Building },
         { to: '/manage', label: 'Data Manager', icon: Database },
     ];
 
