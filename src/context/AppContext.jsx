@@ -28,9 +28,44 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
         ? Math.round(assetsWithAge.reduce((sum, a) => sum + (a.age || 0), 0) / assetsWithAge.length)
         : null;
     
+    // Calculate lead score (0-100)
+    // Factors: building age (50%), portfolio size (25%), old buildings count (25%)
+    let leadScore = 0;
+    
+    // Age score: higher age = higher score (50 points max)
+    if (avgAge) {
+        if (avgAge >= 50) leadScore += 50;
+        else if (avgAge >= 40) leadScore += 40;
+        else if (avgAge >= 30) leadScore += 30;
+        else if (avgAge >= 20) leadScore += 20;
+        else leadScore += 10;
+    }
+    
+    // Portfolio size score: more buildings = higher score (25 points max)
+    const buildingCount = assets.length;
+    if (buildingCount >= 50) leadScore += 25;
+    else if (buildingCount >= 20) leadScore += 20;
+    else if (buildingCount >= 10) leadScore += 15;
+    else if (buildingCount >= 5) leadScore += 10;
+    else if (buildingCount > 0) leadScore += 5;
+    
+    // Old buildings count score (25 points max)
+    const oldBuildingsCount = assets.filter(a => a.age && a.age >= 40).length;
+    if (oldBuildingsCount >= 20) leadScore += 25;
+    else if (oldBuildingsCount >= 10) leadScore += 20;
+    else if (oldBuildingsCount >= 5) leadScore += 15;
+    else if (oldBuildingsCount > 0) leadScore += 10;
+    
+    // Determine priority tier
+    let priority = 'cold';
+    if (leadScore >= 70) priority = 'hot';
+    else if (leadScore >= 50) priority = 'warm';
+    
     return {
         id: row.id,
         company_name: row.company_name,
+        lead_score: leadScore,
+        priority: priority,
         contact_person: {
             name: row.contact_name || '',
             title: row.contact_title || ''

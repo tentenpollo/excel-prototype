@@ -9,7 +9,8 @@ const ProspectList = () => {
     const { prospects, getStatusColor } = useApp();
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'lead_score', direction: 'desc' }); // Default sort by score
+    const [priorityFilter, setPriorityFilter] = useState('all'); // all, hot, warm, cold
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState([]);
@@ -17,6 +18,11 @@ const ProspectList = () => {
 
     const filteredData = useMemo(() => {
         let data = [...prospects];
+
+        // Priority filter
+        if (priorityFilter !== 'all') {
+            data = data.filter(p => p.priority === priorityFilter);
+        }
 
         // Filter
         if (search) {
@@ -43,6 +49,9 @@ const ProspectList = () => {
                 } else if (sortConfig.key === 'old_buildings') {
                     aValue = (a.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 40).length;
                     bValue = (b.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 40).length;
+                } else if (sortConfig.key === 'lead_score') {
+                    aValue = a.lead_score || 0;
+                    bValue = b.lead_score || 0;
                 }
 
                 if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -122,7 +131,55 @@ const ProspectList = () => {
             />
 
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <h1 className="text-2xl font-bold text-slate-900">Prospect Intelligence</h1>
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900">Prospect Intelligence</h1>
+                    <div className="flex gap-2 mt-2">
+                        <button
+                            onClick={() => setPriorityFilter('all')}
+                            className={clsx(
+                                "inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium transition-colors",
+                                priorityFilter === 'all'
+                                    ? "bg-slate-900 text-white"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            )}
+                        >
+                            All Leads
+                        </button>
+                        <button
+                            onClick={() => setPriorityFilter('hot')}
+                            className={clsx(
+                                "inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium transition-colors",
+                                priorityFilter === 'hot'
+                                    ? "bg-red-600 text-white"
+                                    : "bg-red-50 text-red-700 hover:bg-red-100"
+                            )}
+                        >
+                            🔥 Hot
+                        </button>
+                        <button
+                            onClick={() => setPriorityFilter('warm')}
+                            className={clsx(
+                                "inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium transition-colors",
+                                priorityFilter === 'warm'
+                                    ? "bg-orange-600 text-white"
+                                    : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                            )}
+                        >
+                            ⚡ Warm
+                        </button>
+                        <button
+                            onClick={() => setPriorityFilter('cold')}
+                            className={clsx(
+                                "inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium transition-colors",
+                                priorityFilter === 'cold'
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                            )}
+                        >
+                            ❄️ Cold
+                        </button>
+                    </div>
+                </div>
 
                 <div className="flex w-full sm:w-auto gap-4">
                     {/* Action Bar for Selection */}
@@ -208,13 +265,20 @@ const ProspectList = () => {
                                     onClick={() => requestSort('old_buildings')}
                                     title="Buildings 40+ years old"
                                 >
-                                    <div className="flex items-center">Needs Reno {getSortIcon('old_buildings')}</div>
+                                    <div className="flex items-center">Potential Reno {getSortIcon('old_buildings')}</div>
                                 </th>
                                 <th
                                     className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
                                     onClick={() => requestSort('avg_age')}
                                 >
                                     <div className="flex items-center">Avg Age {getSortIcon('avg_age')}</div>
+                                </th>
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    onClick={() => requestSort('lead_score')}
+                                    title="Automated lead score based on age, portfolio size, and renovation needs"
+                                >
+                                    <div className="flex items-center">Lead Score {getSortIcon('lead_score')}</div>
                                 </th>
                                 <th
                                     className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
@@ -279,6 +343,19 @@ const ProspectList = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                             {prospect.portfolio_stats.avg_building_age ? `${prospect.portfolio_stats.avg_building_age} yrs` : '-'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <span className={clsx(
+                                                    "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                                    prospect.priority === 'hot' ? "bg-red-100 text-red-800" :
+                                                    prospect.priority === 'warm' ? "bg-orange-100 text-orange-800" :
+                                                    "bg-blue-100 text-blue-800"
+                                                )}>
+                                                    {prospect.priority === 'hot' ? '🔥' : prospect.priority === 'warm' ? '⚡' : '❄️'}
+                                                    <span className="font-semibold">{prospect.lead_score || 0}</span>
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                             {prospect.last_contact_date ? new Date(prospect.last_contact_date).toLocaleDateString() : '-'}

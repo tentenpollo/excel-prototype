@@ -282,6 +282,18 @@ const LeadDetail = () => {
                                 <option value="not_interested">Not Interested</option>
                             </select>
 
+                            {data.lead_score !== undefined && (
+                                <span className={clsx(
+                                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold",
+                                    data.priority === 'hot' ? "bg-red-100 text-red-800" :
+                                    data.priority === 'warm' ? "bg-orange-100 text-orange-800" :
+                                    "bg-blue-100 text-blue-800"
+                                )}>
+                                    {data.priority === 'hot' ? '🔥' : data.priority === 'warm' ? '⚡' : '❄️'}
+                                    Lead Score: <span className="font-bold">{data.lead_score}/100</span>
+                                </span>
+                            )}
+
                             <label className="flex items-center space-x-2 text-sm text-slate-600 cursor-pointer">
                                 <input
                                     type="checkbox"
