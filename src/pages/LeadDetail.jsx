@@ -33,11 +33,11 @@ const LeadDetail = () => {
     }, [id, prospects]);
 
     if (!data) {
-        if (!prospects.length) return <div className="p-8">Loading...</div>;
+        if (!prospects.length) return <div className="p-8 text-slate-900 dark:text-white">Loading...</div>;
         return (
             <div className="max-w-4xl mx-auto mt-20 text-center">
-                <h2 className="text-2xl font-bold text-slate-900 mb-4">Prospect Not Found</h2>
-                <button onClick={() => navigate('/prospects')} className="text-indigo-600 hover:text-indigo-800 font-medium">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Prospect Not Found</h2>
+                <button onClick={() => navigate('/prospects')} className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
                     &larr; Return to List
                 </button>
             </div>
@@ -176,7 +176,7 @@ const LeadDetail = () => {
     };
 
     return (
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500 dark:bg-slate-950 min-h-screen">
             <BuildingModal
                 isOpen={isBuildingModalOpen}
                 onClose={() => setIsBuildingModalOpen(false)}
@@ -187,13 +187,13 @@ const LeadDetail = () => {
             {/* Portfolio Full-Width Modal */}
             {isPortfolioModalOpen && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-start justify-center p-6">
-                    <div className="bg-white rounded-2xl w-full max-w-6xl h-[85vh] overflow-auto shadow-2xl relative">
-                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
-                            <h3 className="text-lg font-semibold">Portfolio — {data.company_name}</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-6xl h-[85vh] overflow-auto shadow-2xl relative">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Portfolio — {data.company_name}</h3>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setIsPortfolioModalOpen(false)}
-                                    className="text-slate-500 hover:text-slate-700 px-3 py-2 rounded-md"
+                                    className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 px-3 py-2 rounded-md"
                                 >
                                     Close
                                 </button>
@@ -202,7 +202,7 @@ const LeadDetail = () => {
 
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="text-sm text-slate-500">{data.portfolio_stats.total_buildings || 0} Buildings</div>
+                                <div className="text-sm text-slate-500 dark:text-slate-400">{data.portfolio_stats.total_buildings || 0} Buildings</div>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={handleAddBuilding}
@@ -215,22 +215,22 @@ const LeadDetail = () => {
 
                             {/* Reuse same table layout but full width */}
                             {data.portfolio_stats.assets && data.portfolio_stats.assets.length > 0 ? (
-                                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-                                    <table className="min-w-full divide-y divide-slate-300">
-                                        <thead className="bg-slate-50">
+                                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-slate-700 rounded-lg">
+                                    <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700">
+                                        <thead className="bg-slate-50 dark:bg-slate-900">
                                             <tr>
-                                                <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 uppercase">Property Name</th>
-                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Address</th>
-                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Units</th>
-                                                <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+                                                <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Units</th>
+                                                <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-200 bg-white">
+                                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                                             {data.portfolio_stats.assets.map((asset, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-50">
-                                                    <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900">{asset.name}</td>
-                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.address}</td>
-                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.units}</td>
+                                                <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                                                    <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
+                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
+                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.units}</td>
                                                     <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
                                                         <button onClick={() => { handleEditBuilding(idx); setIsPortfolioModalOpen(false); }} className="text-indigo-600 hover:text-indigo-900 mr-3">
                                                             <Pencil className="w-4 h-4" />
@@ -245,9 +245,9 @@ const LeadDetail = () => {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="text-center py-8 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
-                                    <Building className="mx-auto h-8 w-8 text-slate-400" />
-                                    <p className="mt-2 text-sm text-slate-500">No buildings listed.</p>
+                                <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
+                                    <Building className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500" />
+                                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No buildings listed.</p>
                                     <button
                                         onClick={() => { handleAddBuilding(); setIsPortfolioModalOpen(false); }}
                                         className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
@@ -264,11 +264,11 @@ const LeadDetail = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
-                    <button onClick={() => navigate(-1)} className="mr-4 p-2 rounded-full hover:bg-slate-100 text-slate-500">
+                    <button onClick={() => navigate(-1)} className="mr-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900">{data.company_name}</h1>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{data.company_name}</h1>
                         <div className="flex items-center mt-2 space-x-4">
                             <select
                                 value={data.status}
@@ -336,18 +336,18 @@ const LeadDetail = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Col: Contact Info & Map */}
                 <div className="space-y-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Contact Details</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Contact Details</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Contact Name</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Contact Name</label>
                                 <input
                                     type="text"
                                     value={data.contact_person.name}
                                     onChange={(e) => handleChange('contact_person', 'name', e.target.value)}
                                     className={clsx(
-                                        "block w-full text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500",
-                                        validationErrors['contact_person.name'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300"
+                                        "block w-full text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors",
+                                        validationErrors['contact_person.name'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300 dark:border-slate-600"
                                     )}
                                 />
                                 {validationErrors['contact_person.name'] && (
@@ -355,27 +355,27 @@ const LeadDetail = () => {
                                 )}
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Title</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={data.contact_person.title}
                                     onChange={(e) => handleChange('contact_person', 'title', e.target.value)}
-                                    className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="block w-full text-sm border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
                                 <div className="relative rounded-md shadow-sm">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Mail className="h-4 w-4 text-slate-400" />
+                                        <Mail className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                                     </div>
                                     <input
                                         type="email"
                                         value={data.contact_info.email}
                                         onChange={(e) => handleChange('contact_info', 'email', e.target.value)}
                                         className={clsx(
-                                            "block w-full pl-10 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500",
-                                            validationErrors['contact_info.email'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300"
+                                            "block w-full pl-10 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors",
+                                            validationErrors['contact_info.email'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300 dark:border-slate-600"
                                         )}
                                     />
                                 </div>
@@ -384,18 +384,18 @@ const LeadDetail = () => {
                                 )}
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Phone</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Phone</label>
                                 <div className="relative rounded-md shadow-sm">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Phone className="h-4 w-4 text-slate-400" />
+                                        <Phone className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                                     </div>
                                     <input
                                         type="text"
                                         value={data.contact_info.phone}
                                         onChange={(e) => handleChange('contact_info', 'phone', e.target.value)}
                                         className={clsx(
-                                            "block w-full pl-10 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500",
-                                            validationErrors['contact_info.phone'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300"
+                                            "block w-full pl-10 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors",
+                                            validationErrors['contact_info.phone'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300 dark:border-slate-600"
                                         )}
                                     />
                                 </div>
@@ -404,44 +404,44 @@ const LeadDetail = () => {
                                 )}
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Website</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Website</label>
                                 <div className="relative rounded-md shadow-sm">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Globe className="h-4 w-4 text-slate-400" />
+                                        <Globe className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                                     </div>
                                     <input
                                         type="url"
                                         value={data.website || ''}
                                         onChange={(e) => handleChange(null, 'website', e.target.value)}
                                         placeholder="https://example.com"
-                                        className="block w-full pl-10 text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="block w-full pl-10 text-sm border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
                                     />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Address</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Address</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Street</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Street</label>
                                 <input
                                     type="text"
                                     value={data.address?.street || ''}
                                     onChange={(e) => handleChange('address', 'street', e.target.value)}
-                                    className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="block w-full text-sm border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">City</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">City</label>
                                 <input
                                     type="text"
                                     value={data.address?.city || ''}
                                     onChange={(e) => handleChange('address', 'city', e.target.value)}
                                     className={clsx(
-                                        "block w-full text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500",
-                                        validationErrors['address.city'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300"
+                                        "block w-full text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors",
+                                        validationErrors['address.city'] ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-slate-300 dark:border-slate-600"
                                     )}
                                 />
                                 {validationErrors['address.city'] && (
@@ -449,36 +449,36 @@ const LeadDetail = () => {
                                 )}
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Province</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Province</label>
                                 <input
                                     type="text"
                                     value={data.address?.province || ''}
                                     onChange={(e) => handleChange('address', 'province', e.target.value)}
-                                    className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="block w-full text-sm border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Postal Code</label>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Postal Code</label>
                                 <input
                                     type="text"
                                     value={data.address?.postal_code || ''}
                                     onChange={(e) => handleChange('address', 'postal_code', e.target.value)}
-                                    className="block w-full text-sm border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="block w-full text-sm border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-64 relative z-0">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden h-64 relative z-0 transition-colors">
                         {!showMap ? (
                             <div 
-                                className="h-full w-full flex items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+                                className="h-full w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                 onClick={() => setShowMap(true)}
                             >
                                 <div className="text-center">
-                                    <MapPin className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                                    <p className="text-sm text-slate-600 font-medium">Click to load map</p>
-                                    <p className="text-xs text-slate-500 mt-1">
+                                    <MapPin className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-2" />
+                                    <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">Click to load map</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                         {data.address.city}, {data.address.province}
                                     </p>
                                 </div>
@@ -501,14 +501,14 @@ const LeadDetail = () => {
 
                 {/* Right Col: Portfolio & Notes */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
                                 <Building className="w-5 h-5 mr-2 text-indigo-500" />
                                 Portfolio
                             </h3>
                             <div className="flex items-center space-x-2">
-                                <span className="bg-slate-100 text-slate-600 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
+                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
                                     {data.portfolio_stats.total_buildings || 0} Bldgs
                                 </span>
                                 {(() => {
@@ -531,24 +531,24 @@ const LeadDetail = () => {
                         </div>
 
                         {data.portfolio_stats.assets && data.portfolio_stats.assets.length > 0 ? (
-                            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-                                <table className="min-w-full divide-y divide-slate-300">
-                                    <thead className="bg-slate-50">
+                            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-slate-700 rounded-lg">
+                                <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700">
+                                    <thead className="bg-slate-50 dark:bg-slate-900">
                                         <tr>
-                                            <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 uppercase">Property Name</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Address</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Year Built</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Age</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">Units</th>
-                                            <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+                                            <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Year Built</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Age</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Units</th>
+                                            <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-200 bg-white">
+                                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                                         {data.portfolio_stats.assets.map((asset, idx) => (
-                                            <tr key={idx} className={clsx(asset.age && asset.age >= 50 ? "bg-red-50" : asset.age && asset.age >= 40 ? "bg-orange-50" : "")}>
-                                                <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900">{asset.name}</td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.address}</td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.year_built || '-'}</td>
+                                            <tr key={idx} className={clsx(asset.age && asset.age >= 50 ? "bg-red-50 dark:bg-red-950" : asset.age && asset.age >= 40 ? "bg-orange-50 dark:bg-orange-950" : "")}>
+                                                <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
+                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
+                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.year_built || '-'}</td>
                                                 <td className="whitespace-nowrap px-3 py-3 text-sm">
                                                     {asset.age ? (
                                                         <span className={clsx(
@@ -562,7 +562,7 @@ const LeadDetail = () => {
                                                         </span>
                                                     ) : '-'}
                                                 </td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">{asset.units}</td>
+                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.units}</td>
                                                 <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
                                                     <button onClick={() => handleEditBuilding(idx)} className="text-indigo-600 hover:text-indigo-900 mr-3">
                                                         <Pencil className="w-4 h-4" />
@@ -577,9 +577,9 @@ const LeadDetail = () => {
                                 </table>
                             </div>
                         ) : (
-                            <div className="text-center py-8 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
-                                <Building className="mx-auto h-8 w-8 text-slate-400" />
-                                <p className="mt-2 text-sm text-slate-500">No buildings listed.</p>
+                            <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
+                                <Building className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500" />
+                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No buildings listed.</p>
                                 <button
                                     onClick={handleAddBuilding}
                                     className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
@@ -590,19 +590,19 @@ const LeadDetail = () => {
                         )}
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Sales Notes</h3>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Sales Notes</h3>
                         <textarea
                             rows={5}
                             value={data.notes}
                             onChange={(e) => handleChange(null, 'notes', e.target.value)}
-                            className="shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-slate-300 rounded-md p-3"
+                            className="shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-slate-300 dark:border-slate-600 rounded-md p-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
                             placeholder="Add notes about specific HVAC opportunities..."
                         />
-                        <div className="mt-2 text-xs text-slate-400 flex justify-between">
+                        <div className="mt-2 text-xs text-slate-400 dark:text-slate-500 flex justify-between">
                             <span>Last modified: {data.last_contact_date ? new Date(data.last_contact_date).toLocaleString() : 'Never'}</span>
                             {(!data.last_contact_date || new Date(data.last_contact_date) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) && (
-                                <span className="text-amber-600 flex items-center">
+                                <span className="text-amber-600 dark:text-amber-500 flex items-center">
                                     <AlertTriangle className="w-3 h-3 mr-1" /> Needs Follow-up
                                 </span>
                             )}

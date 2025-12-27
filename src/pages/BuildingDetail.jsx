@@ -170,8 +170,8 @@ const BuildingDetail = () => {
 
     if (!building) {
         return (
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <p className="text-slate-500">Building not found</p>
+            <div className="w-full px-4 py-8 dark:bg-slate-950 min-h-screen">
+                <p className="text-slate-500 dark:text-slate-400">Building not found</p>
             </div>
         );
     }
@@ -179,15 +179,15 @@ const BuildingDetail = () => {
     const prospect = prospects.find(p => p.id === prospectId);
 
     return (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 dark:bg-slate-950 min-h-screen">
             {/* Header with Profile Photo */}
             <div className="flex items-start justify-between mb-6 gap-6">
                 <div className="flex items-start gap-4 flex-1">
                     <button
                         onClick={() => navigate('/buildings')}
-                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors mt-1"
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors mt-1"
                     >
-                        <ArrowLeft className="w-5 h-5 text-slate-600" />
+                        <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     </button>
                     
                     {/* Profile Photo */}
@@ -203,14 +203,14 @@ const BuildingDetail = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="w-24 h-24 rounded-lg bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center flex-shrink-0">
-                            <Building className="w-10 h-10 text-slate-400" />
+                        <div className="w-24 h-24 rounded-lg bg-slate-100 dark:bg-slate-700 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
+                            <Building className="w-10 h-10 text-slate-400 dark:text-slate-500" />
                         </div>
                     )}
                     
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-slate-900">{building.name || 'Untitled Building'}</h1>
-                        <p className="text-slate-600 mt-1">{building.address}</p>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{building.name || 'Untitled Building'}</h1>
+                        <p className="text-slate-600 dark:text-slate-400 mt-1">{building.address}</p>
                     </div>
                 </div>
                 {building.latitude && building.longitude ? (
@@ -234,15 +234,15 @@ const BuildingDetail = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b border-slate-200">
+            <div className="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700">
                 {['info', 'photos', 'notes', 'map'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
                             activeTab === tab
-                                ? 'border-indigo-600 text-indigo-600'
-                                : 'border-transparent text-slate-600 hover:text-slate-900'
+                                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'
                         }`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -252,42 +252,42 @@ const BuildingDetail = () => {
 
             {/* Info Tab */}
             {activeTab === 'info' && (
-                <div className="bg-white rounded-lg border border-slate-200 p-6">
+                <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6 transition-colors">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <p className="text-sm text-slate-600 uppercase font-semibold">Building Name</p>
-                            <p className="text-lg text-slate-900 font-medium mt-1">{building.name || '-'}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Building Name</p>
+                            <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">{building.name || '-'}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600 uppercase font-semibold">Address</p>
-                            <p className="text-lg text-slate-900 font-medium mt-1">{building.address || '-'}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Address</p>
+                            <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">{building.address || '-'}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600 uppercase font-semibold">Year Built</p>
-                            <p className="text-lg text-slate-900 font-medium mt-1">{building.year_built || 'Unknown'}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Year Built</p>
+                            <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">{building.year_built || 'Unknown'}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600 uppercase font-semibold">Age</p>
-                            <p className="text-lg text-slate-900 font-medium mt-1">
+                            <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Age</p>
+                            <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">
                                 {building.age ? `${building.age} years` : '-'}
                             </p>
                         </div>
                         {building.year_built_source && (
                             <div>
-                                <p className="text-sm text-slate-600 uppercase font-semibold">Year Source</p>
-                                <p className="text-lg text-slate-900 font-medium mt-1">{building.year_built_source}</p>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Year Source</p>
+                                <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">{building.year_built_source}</p>
                             </div>
                         )}
                         {building.year_built_confidence && (
                             <div>
-                                <p className="text-sm text-slate-600 uppercase font-semibold">Confidence</p>
-                                <p className="text-lg text-slate-900 font-medium mt-1">
+                                <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Confidence</p>
+                                <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">
                                     {(building.year_built_confidence * 100).toFixed(0)}%
                                 </p>
                             </div>
                         )}
                         <div>
-                            <p className="text-sm text-slate-600 uppercase font-semibold">Prospect</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Prospect</p>
                             <p className="text-lg text-slate-900 font-medium mt-1">{prospect?.company_name || '-'}</p>
                         </div>
                     </div>

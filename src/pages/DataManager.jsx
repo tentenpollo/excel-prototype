@@ -56,9 +56,9 @@ const DataManager = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 dark:bg-slate-950 min-h-screen">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <h1 className="text-2xl font-bold text-slate-900">Data Management</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Data Management</h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -69,16 +69,16 @@ const DataManager = () => {
             </div>
 
             {/* Filters Bar */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 space-y-4 flex flex-col">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 space-y-4 flex flex-col transition-colors">
                 <div className="flex-1 min-w-[200px]">
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Search Keywords</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Search Keywords</label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-4 w-4 text-slate-400" />
+                            <Search className="h-4 w-4 text-slate-400 dark:text-slate-600" />
                         </div>
                         <input
                             type="text"
-                            className="block w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                            className="block w-full pl-9 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md leading-5 bg-white dark:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors"
                             placeholder="Search..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -87,11 +87,11 @@ const DataManager = () => {
                 </div>
 
                 <div className="w-full">
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Status</label>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Status</label>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="block w-full pl-3 pr-10 py-2 text-sm border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
+                        className="block w-full pl-3 pr-10 py-2 text-sm border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md transition-colors"
                     >
                         <option value="all">All Statuses</option>
                         <option value="new">New</option>

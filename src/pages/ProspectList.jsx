@@ -122,7 +122,7 @@ const ProspectList = () => {
     };
 
     return (
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 dark:bg-slate-950 min-h-screen">
             <AddToListModal
                 isOpen={isAddToListModalOpen}
                 onClose={() => setIsAddToListModalOpen(false)}
@@ -132,7 +132,7 @@ const ProspectList = () => {
 
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Prospect Intelligence</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Prospect Intelligence</h1>
                     <div className="flex gap-2 mt-2">
                         <button
                             onClick={() => setPriorityFilter('all')}
@@ -220,10 +220,10 @@ const ProspectList = () => {
                 </div>
             </div>
 
-            <div className="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 shadow-sm rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200">
-                        <thead className="bg-slate-50">
+                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                        <thead className="bg-slate-50 dark:bg-slate-900">
                             <tr>
                                 <th scope="col" className="px-6 py-3 w-4">
                                     <div className="flex items-center">
@@ -237,57 +237,57 @@ const ProspectList = () => {
                                     </div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('status')}
                                 >
                                     <div className="flex items-center">Status {getSortIcon('status')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('company_name')}
                                 >
                                     <div className="flex items-center">Company {getSortIcon('company_name')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('address')}
                                 >
                                     <div className="flex items-center">City</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('portfolio_size')}
                                 >
                                     <div className="flex items-center">Portfolio {getSortIcon('portfolio_size')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('old_buildings')}
                                     title="Buildings 40+ years old"
                                 >
                                     <div className="flex items-center">Potential Reno {getSortIcon('old_buildings')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('avg_age')}
                                 >
                                     <div className="flex items-center">Avg Age {getSortIcon('avg_age')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('lead_score')}
                                     title="Automated lead score based on age, portfolio size, and renovation needs"
                                 >
                                     <div className="flex items-center">Lead Score {getSortIcon('lead_score')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                                 >
                                     Last Contact
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-slate-200">
+                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                             {filteredData.map((prospect) => {
                                 const isSelected = selectedIds.includes(prospect.id);
                                 return (
@@ -296,7 +296,7 @@ const ProspectList = () => {
                                         onClick={() => navigate(`/prospects/${prospect.id}`)}
                                         className={clsx(
                                             "cursor-pointer transition-colors",
-                                            isSelected ? "bg-indigo-50 hover:bg-indigo-100" : "hover:bg-indigo-50/50"
+                                            isSelected ? "bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 dark:hover:bg-indigo-900" : "hover:bg-slate-50 dark:hover:bg-slate-700"
                                         )}
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -317,13 +317,13 @@ const ProspectList = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-slate-900">{prospect.company_name}</div>
-                                            <div className="text-sm text-slate-500">{prospect.contact_person.name}</div>
+                                            <div className="text-sm font-medium text-slate-900 dark:text-white">{prospect.company_name}</div>
+                                            <div className="text-sm text-slate-500 dark:text-slate-400">{prospect.contact_person.name}</div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                                             {prospect.address.city}, {prospect.address.province}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                                             {prospect.portfolio_stats.total_buildings} bldgs
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -341,7 +341,7 @@ const ProspectList = () => {
                                                 );
                                             })()}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                                             {prospect.portfolio_stats.avg_building_age ? `${prospect.portfolio_stats.avg_building_age} yrs` : '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -357,7 +357,7 @@ const ProspectList = () => {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                                             {prospect.last_contact_date ? new Date(prospect.last_contact_date).toLocaleDateString() : '-'}
                                         </td>
                                     </tr>

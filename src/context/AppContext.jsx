@@ -111,6 +111,29 @@ export const AppProvider = ({ children }) => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [colorMode, setColorMode] = useState('Status'); // 'Status' or 'Type'
+    
+    // Theme state (light or dark)
+    const [theme, setTheme] = useState(() => {
+        const saved = localStorage.getItem('theme');
+        if (saved) return saved;
+        // Check system preference
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    });
+
+    // Update document theme
+    useEffect(() => {
+        const html = document.documentElement;
+        if (theme === 'dark') {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    };
 
     const [filters, setFilters] = useState({
         status: 'all',
@@ -442,6 +465,8 @@ export const AppProvider = ({ children }) => {
         setSearchQuery,
         colorMode,
         setColorMode,
+        theme,
+        toggleTheme,
         filters,
         setFilters,
         updateProspect,

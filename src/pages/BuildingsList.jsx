@@ -12,7 +12,6 @@ const BuildingsList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 25;
     
-    // Filters
     const [ageFilter, setAgeFilter] = useState('all'); // all, under-20, 20-30, 30-50, 50plus
     const [yearDataFilter, setYearDataFilter] = useState('all'); // all, with-data, no-data
     const [showFilters, setShowFilters] = useState(false);
@@ -24,7 +23,6 @@ const BuildingsList = () => {
         prospect: ''
     });
 
-    // Flatten all buildings from all prospects
     const allBuildings = useMemo(() => {
         const buildings = [];
         const currentYear = new Date().getFullYear();
@@ -180,11 +178,11 @@ const BuildingsList = () => {
     const endIndex = startIndex + itemsPerPage;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 dark:bg-slate-950 min-h-screen">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                 <div className="flex items-center gap-3">
                     <Building className="w-8 h-8 text-indigo-600" />
-                    <h1 className="text-2xl font-bold text-slate-900">Buildings Directory</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Buildings Directory</h1>
                 </div>
 
                 <div className="flex w-full sm:w-auto gap-4">
@@ -194,7 +192,7 @@ const BuildingsList = () => {
                         </div>
                         <input
                             type="text"
-                            className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-800 placeholder-slate-500 dark:placeholder-slate-500 text-slate-900 dark:text-white focus:outline-none focus:placeholder-slate-400 dark:focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
                             placeholder="Search buildings..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -326,83 +324,83 @@ const BuildingsList = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white rounded-lg p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 uppercase font-semibold">Total Buildings</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">{allBuildings.length}</p>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 transition-colors">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Total Buildings</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{allBuildings.length}</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 uppercase font-semibold">Filtered Results</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">{filteredData.length}</p>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 transition-colors">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Filtered Results</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{filteredData.length}</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 uppercase font-semibold">With Year Data</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 transition-colors">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">With Year Data</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
                         {allBuildings.filter(b => b.year_built).length}
                     </p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-slate-200">
-                    <p className="text-xs text-slate-500 uppercase font-semibold">50+ Years Old</p>
-                    <p className="text-2xl font-bold text-red-600 mt-1">
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 transition-colors">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">50+ Years Old</p>
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-500 mt-1">
                         {allBuildings.filter(b => b.age && b.age >= 50).length}
                     </p>
                 </div>
             </div>
 
-            <div className="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 shadow-sm rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200">
-                        <thead className="bg-slate-50">
+                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                        <thead className="bg-slate-50 dark:bg-slate-900">
                             <tr>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('name')}
                                 >
                                     <div className="flex items-center">Building {getSortIcon('name')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('address')}
                                 >
                                     <div className="flex items-center">Address {getSortIcon('address')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('year_built')}
                                 >
                                     <div className="flex items-center">Year Built {getSortIcon('year_built')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('age')}
                                 >
                                     <div className="flex items-center">Age {getSortIcon('age')}</div>
                                 </th>
                                 <th
-                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700"
+                                    className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('prospect_name')}
                                 >
                                     <div className="flex items-center">Prospect {getSortIcon('prospect_name')}</div>
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                     City
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-slate-200">
+                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                             {filteredData.map((building, idx) => (
-                                <tr key={`${building.prospect_id}-${idx}`} className="hover:bg-indigo-50/50 transition-colors">
+                                <tr key={`${building.prospect_id}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <button
                                             onClick={() => navigate(`/buildings/${building.prospect_id}/${building.id}`)}
-                                            className="text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
+                                            className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline"
                                         >
                                             {building.name || '-'}
                                         </button>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm text-slate-600 max-w-xs truncate">{building.address || '-'}</div>
+                                        <div className="text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate">{building.address || '-'}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                                         {building.year_built || '-'}
                                     </td>
                                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${getAgeColor(building.age)}`}>
@@ -410,10 +408,10 @@ const BuildingsList = () => {
                                             {building.age ? `${building.age} years` : '-'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                                         {building.prospect_name}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                                         {building.prospect_city}
                                     </td>
                                 </tr>

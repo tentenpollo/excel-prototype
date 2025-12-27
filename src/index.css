@@ -12,3 +12,148 @@ body,
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Comprehensive Dark Mode Layers */
+@layer base {
+  /* Page backgrounds */
+  body {
+    @apply bg-white dark:bg-slate-950 transition-colors duration-200;
+  }
+
+  #root {
+    @apply bg-white dark:bg-slate-950;
+  }
+}
+
+@layer components {
+  /* Cards and containers */
+  .card {
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors;
+  }
+
+  /* Text colors */
+  .text-heading {
+    @apply text-slate-900 dark:text-white;
+  }
+
+  .text-label {
+    @apply text-slate-700 dark:text-slate-300;
+  }
+
+  .text-secondary {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+
+  .text-muted {
+    @apply text-slate-500 dark:text-slate-500;
+  }
+
+  .text-hint {
+    @apply text-slate-400 dark:text-slate-600;
+  }
+
+  /* Input fields */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  textarea,
+  select {
+    @apply bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-300 dark:border-slate-600 transition-colors;
+  }
+
+  /* Buttons - secondary */
+  .btn-secondary {
+    @apply bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors;
+  }
+
+  /* Modal/Overlay backgrounds */
+  .modal-bg {
+    @apply bg-white dark:bg-slate-800 transition-colors;
+  }
+
+  /* Table styles */
+  table {
+    @apply dark:divide-slate-700;
+  }
+
+  thead {
+    @apply bg-slate-50 dark:bg-slate-900 transition-colors;
+  }
+
+  tbody tr {
+    @apply hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors;
+  }
+
+  /* Badges and pills */
+  .badge {
+    @apply transition-colors;
+  }
+
+  /* Borders */
+  .border-default {
+    @apply border-slate-200 dark:border-slate-700;
+  }
+
+  /* Shadows adapt in dark mode */
+  .shadow-sm {
+    @apply dark:shadow-slate-950;
+  }
+
+  /* Links */
+  a {
+    @apply text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors;
+  }
+
+  /* Placeholders */
+  ::placeholder {
+    @apply text-slate-500 dark:text-slate-500;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-100 dark:bg-slate-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-600 rounded hover:bg-slate-400 dark:hover:bg-slate-500;
+  }
+}
+
+@layer utilities {
+  /* Quick dark mode utilities */
+  .dark-card {
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700;
+  }
+
+  .dark-text {
+    @apply text-slate-900 dark:text-white;
+  }
+
+  .dark-text-secondary {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+
+  .dark-bg {
+    @apply bg-slate-50 dark:bg-slate-900;
+  }
+
+  .dark-border {
+    @apply border-slate-200 dark:border-slate-700;
+  }
+
+  .dark-hover {
+    @apply hover:bg-slate-50 dark:hover:bg-slate-900;
+  }
+
+  /* Smooth dark mode transitions */
+  .transition-dark {
+    @apply transition-colors duration-200;
+  }
+}
