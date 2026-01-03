@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { MapPin, Upload, Plus, Trash2, Clock, ArrowLeft, Building } from 'lucide-react';
+import { MapPin, Upload, Plus, Trash2, Clock, ArrowLeft, Building, Edit } from 'lucide-react';
+import BuildingModal from '../components/BuildingModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { supabase } from '../lib/supabaseClient';
 import L from 'leaflet';
@@ -17,7 +18,7 @@ L.Icon.Default.mergeOptions({
 const BuildingDetail = () => {
     const { buildingId, prospectId } = useParams();
     const navigate = useNavigate();
-    const { prospects } = useApp();
+    const { prospects, updateProspect } = useApp();
 
     const [building, setBuilding] = useState(null);
     const [notes, setNotes] = useState([]);
@@ -25,6 +26,7 @@ const BuildingDetail = () => {
     const [newNote, setNewNote] = useState('');
     const [uploading, setUploading] = useState(false);
     const [activeTab, setActiveTab] = useState('info'); // info, photos, notes
+    const [isEditOpen, setEditOpen] = useState(false);
 
     useEffect(() => {
         loadBuildingData();
@@ -168,6 +170,35 @@ const BuildingDetail = () => {
         }
     };
 
+    const handleSave = async (formData) => {
+        // Find the current prospect
+        const prospectLocal = prospects.find(p => p.id === prospectId);
+        if (!prospectLocal) {
+            alert('Cannot save: prospect not found');
+            return;
+        }
+
+        const updatedAsset = {
+            ...building,
+            ...formData,
+            year_built: formData.year_built ?? building.year_built,
+            units: formData.units ?? building.units
+        };
+        updatedAsset.age = updatedAsset.year_built ? new Date().getFullYear() - updatedAsset.year_built : updatedAsset.age;
+
+        const currentAssets = prospectLocal.portfolio_stats?.assets || [];
+        const newAssets = currentAssets.map(a => a.id === building.id ? { ...a, ...updatedAsset } : a);
+
+        try {
+            await updateProspect(prospectId, { portfolio_stats: { assets: newAssets } });
+            setBuilding(prev => ({ ...prev, ...updatedAsset }));
+            setEditOpen(false);
+        } catch (err) {
+            console.error('Failed to update building:', err);
+            alert('Failed to save building updates');
+        }
+    };
+
     if (!building) {
         return (
             <div className="w-full px-4 py-8 dark:bg-slate-950 min-h-screen">
@@ -213,24 +244,34 @@ const BuildingDetail = () => {
                         <p className="text-slate-600 dark:text-slate-400 mt-1">{building.address}</p>
                     </div>
                 </div>
-                {building.latitude && building.longitude ? (
+                <div className="flex items-center gap-2">
                     <button
-                        onClick={() => navigate(`/map?latitude=${building.latitude}&longitude=${building.longitude}&zoom=16&buildingId=${building.id}`)}
-                        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        onClick={() => setEditOpen(true)}
+                        className="inline-flex items-center px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                     >
-                        <MapPin className="w-4 h-4 mr-2" />
-                        View on Interactive Map
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Details
                     </button>
-                ) : (
-                    <button
-                        disabled
-                        className="inline-flex items-center px-4 py-2 bg-slate-300 text-slate-500 rounded-lg cursor-not-allowed"
-                        title="No location data available"
-                    >
-                        <MapPin className="w-4 h-4 mr-2" />
-                        No Location Data
-                    </button>
-                )}
+
+                    {building.latitude && building.longitude ? (
+                        <button
+                            onClick={() => navigate(`/map?latitude=${building.latitude}&longitude=${building.longitude}&zoom=16&buildingId=${building.id}`)}
+                            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        >
+                            <MapPin className="w-4 h-4 mr-2" />
+                            View on Interactive Map
+                        </button>
+                    ) : (
+                        <button
+                            disabled
+                            className="inline-flex items-center px-4 py-2 bg-slate-300 text-slate-500 rounded-lg cursor-not-allowed"
+                            title="No location data available"
+                        >
+                            <MapPin className="w-4 h-4 mr-2" />
+                            No Location Data
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Tabs */}
@@ -288,7 +329,7 @@ const BuildingDetail = () => {
                         )}
                         <div>
                             <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Prospect</p>
-                            <p className="text-lg text-slate-900 font-medium mt-1">{prospect?.company_name || '-'}</p>
+                            <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">{prospect?.company_name || '-'}</p>
                         </div>
                     </div>
                 </div>
@@ -397,6 +438,20 @@ const BuildingDetail = () => {
                     </div>
                 </div>
             )}
+
+            {/* Edit Modal */}
+            <BuildingModal
+                isOpen={isEditOpen}
+                onClose={() => setEditOpen(false)}
+                onSave={handleSave}
+                initialData={{
+                    name: building.name || '',
+                    address: building.address || '',
+                    units: building.units || 0,
+                    year_built: building.year_built || null,
+                    age: building.age || null
+                }}
+            />
 
             {/* Map Tab */}
             {activeTab === 'map' && (
