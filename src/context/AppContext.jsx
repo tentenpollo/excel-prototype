@@ -247,13 +247,41 @@ export const AppProvider = ({ children }) => {
 
             // Update Supabase prospect table first
             if (Object.keys(supabaseUpdates).length > 0) {
+                // Debug: log payload before sending to Supabase to help diagnose 400 errors
+                console.debug('Attempting to update prospect in Supabase', { id, supabaseUpdates });
+
+                // Whitelist columns to avoid sending unexpected fields that may cause 400 errors
+                const allowedColumns = new Set([
+                    'company_name','status','contact_name','contact_title',
+                    'email','phone','fax','city','province','street','postal_code','country',
+                    'lat','lng','website','portfolio_assets','portfolio_total_buildings'
+                ]);
+
+                const payload = {};
+                Object.keys(supabaseUpdates).forEach(k => {
+                    if (allowedColumns.has(k)) {
+                        // Normalize lat/lng to numbers or null
+                        if ((k === 'lat' || k === 'lng') && (supabaseUpdates[k] !== undefined && supabaseUpdates[k] !== null)) {
+                            const num = Number(supabaseUpdates[k]);
+                            payload[k] = Number.isFinite(num) ? num : null;
+                        } else if (k === 'portfolio_assets') {
+                            // Ensure portfolio_assets is a string
+                            payload[k] = typeof supabaseUpdates[k] === 'string' ? supabaseUpdates[k] : JSON.stringify(supabaseUpdates[k]);
+                        } else {
+                            payload[k] = supabaseUpdates[k];
+                        }
+                    } else {
+                        console.warn(`Skipping unexpected update key: ${k}`);
+                    }
+                });
+
                 const { error: prospectError } = await supabase
                     .from('prospects')
-                    .update(supabaseUpdates)
+                    .update(payload)
                     .eq('id', id);
 
                 if (prospectError) {
-                    console.error('Failed to update prospect in Supabase:', prospectError);
+                    console.error('Failed to update prospect in Supabase:', prospectError, { id, payload });
                     throw prospectError;
                 }
             }
@@ -261,10 +289,15 @@ export const AppProvider = ({ children }) => {
             // If assets were updated, sync them to the assets table
             if (assetsToSync) {
                 // Delete existing assets for this prospect
-                await supabase
+                const { error: deleteError } = await supabase
                     .from('assets')
                     .delete()
                     .eq('prospect_id', id);
+
+                if (deleteError) {
+                    console.error('Failed to delete existing assets for prospect:', deleteError);
+                    throw deleteError;
+                }
 
                 // Insert new assets
                 if (assetsToSync.length > 0) {
@@ -273,19 +306,24 @@ export const AppProvider = ({ children }) => {
                         prospect_id: id,
                         name: asset.name || asset['Building Name'] || '',
                         address: asset.address || asset.Address || '',
-                        lat: asset.lat,
-                        lng: asset.lng,
+                        lat: asset.lat !== undefined ? (Number.isFinite(Number(asset.lat)) ? Number(asset.lat) : null) : null,
+                        lng: asset.lng !== undefined ? (Number.isFinite(Number(asset.lng)) ? Number(asset.lng) : null) : null,
                         raw: JSON.stringify(asset)
                     }));
 
-                    const { error: insertError } = await supabase
+                    console.debug('Inserting assets for prospect', { id, assetsToInsertCount: assetsToInsert.length });
+
+                    const { data: insertedData, error: insertError } = await supabase
                         .from('assets')
-                        .insert(assetsToInsert);
+                        .insert(assetsToInsert)
+                        .select();
 
                     if (insertError) {
-                        console.error('Failed to insert assets:', insertError);
+                        console.error('Failed to insert assets:', insertError, { id, assetsToInsert });
                         throw insertError;
                     }
+
+                    console.debug('Inserted assets result count:', insertedData?.length ?? 0);
                 }
             }
 

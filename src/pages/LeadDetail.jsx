@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, Save, Building, Phone, Mail, MapPin, Clock, AlertTriangle, Plus, Pencil, Trash2, Globe } from 'lucide-react';
+import { ArrowLeft, Save, Building, Phone, Mail, MapPin, Clock, AlertTriangle, Plus, Pencil, Trash2, Globe, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import clsx from 'clsx';
 import 'leaflet/dist/leaflet.css';
@@ -24,6 +24,13 @@ const LeadDetail = () => {
 
     // Portfolio full-width modal
     const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
+
+    // Portfolio pagination
+    const [portfolioPage, setPortfolioPage] = useState(1);
+    const portfolioItemsPerPage = 10;
+    
+    // Portfolio search
+    const [portfolioSearch, setPortfolioSearch] = useState('');
 
     useEffect(() => {
         const found = prospects.find(p => p.id === id);
@@ -114,7 +121,7 @@ const LeadDetail = () => {
         } catch (error) {
             console.error('Save failed:', error);
             setSaveStatus('error');
-            setValidationErrors({ _general: 'Failed to save changes. Please try again.' });
+            setValidationErrors({ _general: error?.message || 'Failed to save changes. Please try again.' });
             setTimeout(() => setSaveStatus('idle'), 3000);
         }
     };
@@ -531,53 +538,163 @@ const LeadDetail = () => {
                         </div>
 
                         {data.portfolio_stats.assets && data.portfolio_stats.assets.length > 0 ? (
-                            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-slate-700 rounded-lg">
-                                <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700">
-                                    <thead className="bg-slate-50 dark:bg-slate-900">
-                                        <tr>
-                                            <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Year Built</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Age</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Units</th>
-                                            <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
-                                        {data.portfolio_stats.assets.map((asset, idx) => (
-                                            <tr key={idx} className={clsx(asset.age && asset.age >= 50 ? "bg-red-50 dark:bg-red-950" : asset.age && asset.age >= 40 ? "bg-orange-50 dark:bg-orange-950" : "")}>
-                                                <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.year_built || '-'}</td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-sm">
-                                                    {asset.age ? (
-                                                        <span className={clsx(
-                                                            "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-                                                            asset.age >= 50 ? "bg-red-100 text-red-800" :
-                                                            asset.age >= 40 ? "bg-orange-100 text-orange-800" :
-                                                            asset.age >= 30 ? "bg-yellow-100 text-yellow-800" :
-                                                            "bg-green-100 text-green-800"
-                                                        )}>
-                                                            {asset.age} yrs
-                                                        </span>
-                                                    ) : '-'}
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.units}</td>
-                                                <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
-                                                    <button onClick={() => handleEditBuilding(idx)} className="text-indigo-600 hover:text-indigo-900 mr-3">
-                                                        <Pencil className="w-4 h-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteBuilding(idx)} className="text-rose-600 hover:text-rose-900">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </td>
+                            <div className="space-y-4">
+                                {/* Search Input */}
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Search className="h-4 w-4 text-slate-400 dark:text-slate-600" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Search buildings by name or address..."
+                                        value={portfolioSearch}
+                                        onChange={(e) => {
+                                            setPortfolioSearch(e.target.value);
+                                            setPortfolioPage(1); // Reset to page 1 when searching
+                                        }}
+                                        className="block w-full pl-9 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-md leading-5 bg-white dark:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors"
+                                    />
+                                    {portfolioSearch && (
+                                        <button
+                                            onClick={() => {
+                                                setPortfolioSearch('');
+                                                setPortfolioPage(1);
+                                            }}
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center hover:opacity-75"
+                                        >
+                                            <X className="h-4 w-4 text-slate-400 dark:text-slate-600" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-slate-700 rounded-lg">
+                                    <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700">
+                                        <thead className="bg-slate-50 dark:bg-slate-900">
+                                            <tr>
+                                                <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Year Built</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Age</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Units</th>
+                                                <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                                            {(() => {
+                                                // Filter assets based on search
+                                                const filteredAssets = data.portfolio_stats.assets.filter(asset => {
+                                                    const searchLower = portfolioSearch.toLowerCase();
+                                                    return (
+                                                        (asset.name && asset.name.toLowerCase().includes(searchLower)) ||
+                                                        (asset.address && asset.address.toLowerCase().includes(searchLower))
+                                                    );
+                                                });
+
+                                                // Get paginated results
+                                                const paginatedAssets = filteredAssets
+                                                    .slice((portfolioPage - 1) * portfolioItemsPerPage, portfolioPage * portfolioItemsPerPage);
+
+                                                if (paginatedAssets.length === 0) {
+                                                    return (
+                                                        <tr>
+                                                            <td colSpan="6" className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                                                                {portfolioSearch ? 'No buildings match your search.' : 'No buildings listed.'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                }
+
+                                                return paginatedAssets.map((asset, idx) => {
+                                                    const actualIdx = data.portfolio_stats.assets.indexOf(asset);
+                                                    return (
+                                                        <tr key={actualIdx} className={clsx(asset.age && asset.age >= 50 ? "bg-red-50 dark:bg-red-950" : asset.age && asset.age >= 40 ? "bg-orange-50 dark:bg-orange-950" : "")}>
+                                                            <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
+                                                            <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
+                                                            <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.year_built || '-'}</td>
+                                                            <td className="whitespace-nowrap px-3 py-3 text-sm">
+                                                                {asset.age ? (
+                                                                    <span className={clsx(
+                                                                        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+                                                                        asset.age >= 50 ? "bg-red-100 text-red-800" :
+                                                                        asset.age >= 40 ? "bg-orange-100 text-orange-800" :
+                                                                        asset.age >= 30 ? "bg-yellow-100 text-yellow-800" :
+                                                                        "bg-green-100 text-green-800"
+                                                                    )}>
+                                                                        {asset.age} yrs
+                                                                    </span>
+                                                                ) : '-'}
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.units}</td>
+                                                            <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
+                                                                <button onClick={() => handleEditBuilding(actualIdx)} className="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                                    <Pencil className="w-4 h-4" />
+                                                                </button>
+                                                                <button onClick={() => handleDeleteBuilding(actualIdx)} className="text-rose-600 hover:text-rose-900">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                });
+                                            })()}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Pagination Controls */}
+                                {(() => {
+                                    const filteredAssets = data.portfolio_stats.assets.filter(asset => {
+                                        const searchLower = portfolioSearch.toLowerCase();
+                                        return (
+                                            (asset.name && asset.name.toLowerCase().includes(searchLower)) ||
+                                            (asset.address && asset.address.toLowerCase().includes(searchLower))
+                                        );
+                                    });
+                                    const totalPages = Math.ceil(filteredAssets.length / portfolioItemsPerPage);
+
+                                    return (
+                                        <div className="flex items-center justify-between px-2">
+                                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                Showing {Math.min((portfolioPage - 1) * portfolioItemsPerPage + 1, filteredAssets.length)} to {Math.min(portfolioPage * portfolioItemsPerPage, filteredAssets.length)} of {filteredAssets.length} buildings
+                                            </div>
+                                            {totalPages > 1 && (
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setPortfolioPage(prev => Math.max(1, prev - 1))}
+                                                        disabled={portfolioPage === 1}
+                                            className="inline-flex items-center px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            {Array.from({ length: totalPages }).map((_, i) => (
+                                                <button
+                                                    key={i + 1}
+                                                    onClick={() => setPortfolioPage(i + 1)}
+                                                    className={clsx(
+                                                        "inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-medium transition-colors",
+                                                        portfolioPage === i + 1
+                                                            ? "bg-indigo-600 text-white"
+                                                            : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                                                    )}
+                                                >
+                                                    {i + 1}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => setPortfolioPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={portfolioPage === totalPages}
+                                            className="inline-flex items-center px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
+                        )})()}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
                                 <Building className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500" />
                                 <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No buildings listed.</p>
                                 <button
