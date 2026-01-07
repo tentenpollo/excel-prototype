@@ -13,6 +13,8 @@ const CustomList = React.lazy(() => import('./pages/CustomList'));
 const DataManager = React.lazy(() => import('./pages/DataManager'));
 const BuildingsList = React.lazy(() => import('./pages/BuildingsList'));
 const BuildingDetail = React.lazy(() => import('./pages/BuildingDetail'));
+const Pipeline = React.lazy(() => import('./pages/Pipeline'));
+const Calendar = React.lazy(() => import('./pages/Calendar'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center h-screen">
@@ -27,6 +29,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path="pipeline" element={<Suspense fallback={<LoadingFallback />}><Pipeline /></Suspense>} />
+            <Route path="calendar" element={<Suspense fallback={<LoadingFallback />}><Calendar /></Suspense>} />
             <Route path="map" element={<Suspense fallback={<LoadingFallback />}><TerritoryMap /></Suspense>} />
             <Route path="prospects" element={<ProspectList />} />
             <Route path="prospects/:id" element={<Suspense fallback={<LoadingFallback />}><LeadDetail /></Suspense>} />

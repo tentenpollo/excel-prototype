@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Map as MapIcon, List, Settings, Menu, X, Database, Plus, FolderOpen, Building, Moon, Sun, Bell } from 'lucide-react';
+import { LayoutDashboard, Map as MapIcon, List, Settings, Menu, X, Database, Plus, FolderOpen, Building, Moon, Sun, Bell, Columns, Calendar } from 'lucide-react';
 import clsx from 'clsx';
 import { useApp } from '../context/AppContext';
 import CreateListModal from './CreateListModal';
@@ -14,6 +14,8 @@ const Layout = () => {
 
     const navItems = [
         { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { to: '/pipeline', label: 'Pipeline', icon: Columns },
+        { to: '/calendar', label: 'Calendar', icon: Calendar },
         { to: '/map', label: 'Territory Map', icon: MapIcon },
         { to: '/prospects', label: 'Prospect List', icon: List },
         { to: '/buildings', label: 'Buildings', icon: Building },
@@ -88,22 +90,22 @@ const Layout = () => {
 
                         {/* Settings & Mobile Menu Button */}
                         <div className="flex items-center ml-auto relative">
-                            <button 
+                            <button
                                 className="p-2 ml-2 text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 transition-colors relative"
                                 title="Notifications"
                             >
                                 <Bell className="w-5 h-5" />
                                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                             </button>
-                            
-                            <button 
+
+                            <button
                                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                                 className="p-2 ml-2 text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
                                 title="Toggle theme"
                             >
                                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                             </button>
-                            
+
                             {/* Settings Dropdown */}
                             {isSettingsOpen && (
                                 <div className="absolute right-0 top-16 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50">
@@ -119,7 +121,7 @@ const Layout = () => {
                                     </button>
                                 </div>
                             )}
-                            
+
                             <div className="sm:hidden ml-2 flex items-center">
                                 <button
                                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

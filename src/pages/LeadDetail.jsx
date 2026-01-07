@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, Save, Building, Phone, Mail, MapPin, Clock, AlertTriangle, Plus, Pencil, Trash2, Globe, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { ArrowLeft, Save, Building, Phone, Mail, MapPin, Clock, AlertTriangle, Plus, Pencil, Trash2, Globe, ChevronLeft, ChevronRight, Search, X, MessageSquare, PhoneCall, Calendar, CheckSquare, List } from 'lucide-react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import clsx from 'clsx';
 import 'leaflet/dist/leaflet.css';
@@ -10,7 +10,7 @@ import BuildingModal from '../components/BuildingModal';
 const LeadDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { prospects, updateProspect, getStatusColor } = useApp();
+    const { prospects, updateProspect, getStatusColor, addActivityLog, addTask, updateTask, deleteTask, PIPELINE_STAGES } = useApp();
 
     const [data, setData] = useState(null);
     const [isDirty, setIsDirty] = useState(false);
@@ -28,9 +28,14 @@ const LeadDetail = () => {
     // Portfolio pagination
     const [portfolioPage, setPortfolioPage] = useState(1);
     const portfolioItemsPerPage = 10;
-    
+
     // Portfolio search
     const [portfolioSearch, setPortfolioSearch] = useState('');
+
+    // Activity & Task state
+    const [activeTab, setActiveTab] = useState('portfolio'); // portfolio, history, tasks
+    const [newActivity, setNewActivity] = useState({ type: 'call', notes: '' });
+    const [newTask, setNewTask] = useState({ title: '', dueDate: '' });
 
     useEffect(() => {
         const found = prospects.find(p => p.id === id);
@@ -75,22 +80,22 @@ const LeadDetail = () => {
     const handleSave = async () => {
         // Validation
         const errors = {};
-        
+
         if (!data.company_name || data.company_name.trim() === '') {
             errors.company_name = 'Company name is required';
         }
-        
+
         if (!data.contact_person.name || data.contact_person.name.trim() === '') {
             errors['contact_person.name'] = 'Contact name is required';
         }
-        
+
         if (data.contact_info.email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(data.contact_info.email)) {
                 errors['contact_info.email'] = 'Invalid email format';
             }
         }
-        
+
         if (data.contact_info.phone) {
             const phoneRegex = /^[\d\s\-\+\(\)]+$/;
             if (!phoneRegex.test(data.contact_info.phone)) {
@@ -101,7 +106,7 @@ const LeadDetail = () => {
         if (data.address && data.address.city && !data.address.city.trim()) {
             errors['address.city'] = 'City cannot be empty';
         }
-        
+
         if (Object.keys(errors).length > 0) {
             setValidationErrors(errors);
             setSaveStatus('error');
@@ -112,7 +117,7 @@ const LeadDetail = () => {
         // Save
         setSaveStatus('saving');
         setValidationErrors({});
-        
+
         try {
             await updateProspect(data.id, data);
             setIsDirty(false);
@@ -147,10 +152,6 @@ const LeadDetail = () => {
                 assets.splice(index, 1);
 
                 newData.portfolio_stats.assets = assets;
-                // Update total stats mostly for display consistency, though user might manually edit them too?
-                // Let's auto-update stats if they seem derived.
-                // Or better, just trust the assets array length for count, but user can edit total_buildings separately.
-                // The current data model has `total_buildings` as a number. Let's sync it.
                 newData.portfolio_stats.total_buildings = assets.length;
                 newData.portfolio_stats.total_units = (newData.portfolio_stats.total_units || 0) - deletedUnits;
 
@@ -280,21 +281,21 @@ const LeadDetail = () => {
                             <select
                                 value={data.status}
                                 onChange={(e) => handleChange(null, 'status', e.target.value)}
-                                className={clsx("text-sm font-semibold rounded-full px-3 py-1 border-0 cursor-pointer capitalize focus:ring-2 ring-offset-1 focus:ring-indigo-500", getStatusColor(data.status))}
+                                className={clsx("text-sm font-semibold rounded-full px-3 py-1 border-0 cursor-pointer capitalize focus:ring-2 ring-offset-1 focus:ring-indigo-500",
+                                    PIPELINE_STAGES.find(s => s.id === data.status)?.color || 'bg-slate-100 text-slate-800'
+                                )}
                             >
-                                <option value="new">New</option>
-                                <option value="contacted">Contacted</option>
-                                <option value="interested">Interested</option>
-                                <option value="negotiating">Negotiating</option>
-                                <option value="not_interested">Not Interested</option>
+                                {PIPELINE_STAGES.map(stage => (
+                                    <option key={stage.id} value={stage.id}>{stage.label}</option>
+                                ))}
                             </select>
 
                             {data.lead_score !== undefined && (
                                 <span className={clsx(
                                     "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold",
                                     data.priority === 'hot' ? "bg-red-100 text-red-800" :
-                                    data.priority === 'warm' ? "bg-orange-100 text-orange-800" :
-                                    "bg-blue-100 text-blue-800"
+                                        data.priority === 'warm' ? "bg-orange-100 text-orange-800" :
+                                            "bg-blue-100 text-blue-800"
                                 )}>
                                     {data.priority === 'hot' ? '🔥' : data.priority === 'warm' ? '⚡' : '❄️'}
                                     Lead Score: <span className="font-bold">{data.lead_score}/100</span>
@@ -478,7 +479,7 @@ const LeadDetail = () => {
 
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden h-64 relative z-0 transition-colors">
                         {!showMap ? (
-                            <div 
+                            <div
                                 className="h-full w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                 onClick={() => setShowMap(true)}
                             >
@@ -506,205 +507,256 @@ const LeadDetail = () => {
                     </div>
                 </div>
 
-                {/* Right Col: Portfolio & Notes */}
+                {/* Right Col: Tabs for Portfolio, Activity, Tasks */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
-                                <Building className="w-5 h-5 mr-2 text-indigo-500" />
-                                Portfolio
-                            </h3>
-                            <div className="flex items-center space-x-2">
-                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
-                                    {data.portfolio_stats.total_buildings || 0} Bldgs
-                                </span>
-                                {(() => {
-                                    const oldBuildings = (data.portfolio_stats.assets || []).filter(asset => asset.age && asset.age >= 40).length;
-                                    if (oldBuildings > 0) {
-                                        return (
-                                            <span className="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
-                                                {oldBuildings} Need Reno
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+                        <div className="border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
+                            <nav className="-mb-px flex space-x-8">
+                                {[
+                                    { id: 'portfolio', label: 'Portfolio', icon: Building },
+                                    { id: 'history', label: 'Activity Log', icon: List },
+                                    { id: 'tasks', label: 'Tasks', icon: CheckSquare }
+                                ].map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={clsx(
+                                            "flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors",
+                                            activeTab === tab.id
+                                                ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                                                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300"
+                                        )}
+                                    >
+                                        <tab.icon className="w-4 h-4" />
+                                        {tab.label}
+                                        {tab.id === 'tasks' && data.tasks?.filter(t => t.status === 'pending').length > 0 && (
+                                            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-600 text-[10px] font-bold">
+                                                {data.tasks.filter(t => t.status === 'pending').length}
                                             </span>
-                                        );
-                                    }
-                                })()}
-                                <button
-                                    onClick={handleAddBuilding}
-                                    className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                    <Plus className="w-3 h-3 mr-1" /> Add
-                                </button>
-                            </div>
+                                        )}
+                                    </button>
+                                ))}
+                            </nav>
                         </div>
 
-                        {data.portfolio_stats.assets && data.portfolio_stats.assets.length > 0 ? (
-                            <div className="space-y-4">
-                                {/* Search Input */}
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Search className="h-4 w-4 text-slate-400 dark:text-slate-600" />
+                        <div className="p-6">
+                            {activeTab === 'portfolio' && (
+                                <>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
+                                            <Building className="w-5 h-5 mr-2 text-indigo-500" />
+                                            Portfolio
+                                        </h3>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
+                                                {data.portfolio_stats.total_buildings || 0} Bldgs
+                                            </span>
+                                            <button
+                                                onClick={handleAddBuilding}
+                                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                                            >
+                                                <Plus className="w-3 h-3 mr-1" /> Add
+                                            </button>
+                                        </div>
                                     </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Search buildings by name or address..."
-                                        value={portfolioSearch}
-                                        onChange={(e) => {
-                                            setPortfolioSearch(e.target.value);
-                                            setPortfolioPage(1); // Reset to page 1 when searching
-                                        }}
-                                        className="block w-full pl-9 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-md leading-5 bg-white dark:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors"
-                                    />
-                                    {portfolioSearch && (
-                                        <button
-                                            onClick={() => {
-                                                setPortfolioSearch('');
-                                                setPortfolioPage(1);
-                                            }}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center hover:opacity-75"
-                                        >
-                                            <X className="h-4 w-4 text-slate-400 dark:text-slate-600" />
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-slate-700 rounded-lg">
-                                    <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700">
-                                        <thead className="bg-slate-50 dark:bg-slate-900">
-                                            <tr>
-                                                <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
-                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
-                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Year Built</th>
-                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Age</th>
-                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Units</th>
-                                                <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
-                                            {(() => {
-                                                // Filter assets based on search
-                                                const filteredAssets = data.portfolio_stats.assets.filter(asset => {
-                                                    const searchLower = portfolioSearch.toLowerCase();
-                                                    return (
-                                                        (asset.name && asset.name.toLowerCase().includes(searchLower)) ||
-                                                        (asset.address && asset.address.toLowerCase().includes(searchLower))
-                                                    );
-                                                });
-
-                                                // Get paginated results
-                                                const paginatedAssets = filteredAssets
-                                                    .slice((portfolioPage - 1) * portfolioItemsPerPage, portfolioPage * portfolioItemsPerPage);
-
-                                                if (paginatedAssets.length === 0) {
-                                                    return (
-                                                        <tr>
-                                                            <td colSpan="6" className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                                                                {portfolioSearch ? 'No buildings match your search.' : 'No buildings listed.'}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                }
-
-                                                return paginatedAssets.map((asset, idx) => {
-                                                    const actualIdx = data.portfolio_stats.assets.indexOf(asset);
-                                                    return (
-                                                        <tr key={actualIdx} className={clsx(asset.age && asset.age >= 50 ? "bg-red-50 dark:bg-red-950" : asset.age && asset.age >= 40 ? "bg-orange-50 dark:bg-orange-950" : "")}>
-                                                            <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
-                                                            <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
-                                                            <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.year_built || '-'}</td>
-                                                            <td className="whitespace-nowrap px-3 py-3 text-sm">
-                                                                {asset.age ? (
-                                                                    <span className={clsx(
-                                                                        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-                                                                        asset.age >= 50 ? "bg-red-100 text-red-800" :
-                                                                        asset.age >= 40 ? "bg-orange-100 text-orange-800" :
-                                                                        asset.age >= 30 ? "bg-yellow-100 text-yellow-800" :
-                                                                        "bg-green-100 text-green-800"
-                                                                    )}>
-                                                                        {asset.age} yrs
-                                                                    </span>
-                                                                ) : '-'}
-                                                            </td>
-                                                            <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.units}</td>
-                                                            <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
-                                                                <button onClick={() => handleEditBuilding(actualIdx)} className="text-indigo-600 hover:text-indigo-900 mr-3">
-                                                                    <Pencil className="w-4 h-4" />
-                                                                </button>
-                                                                <button onClick={() => handleDeleteBuilding(actualIdx)} className="text-rose-600 hover:text-rose-900">
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                });
-                                            })()}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* Pagination Controls */}
-                                {(() => {
-                                    const filteredAssets = data.portfolio_stats.assets.filter(asset => {
-                                        const searchLower = portfolioSearch.toLowerCase();
-                                        return (
-                                            (asset.name && asset.name.toLowerCase().includes(searchLower)) ||
-                                            (asset.address && asset.address.toLowerCase().includes(searchLower))
-                                        );
-                                    });
-                                    const totalPages = Math.ceil(filteredAssets.length / portfolioItemsPerPage);
-
-                                    return (
-                                        <div className="flex items-center justify-between px-2">
-                                            <div className="text-sm text-slate-600 dark:text-slate-400">
-                                                Showing {Math.min((portfolioPage - 1) * portfolioItemsPerPage + 1, filteredAssets.length)} to {Math.min(portfolioPage * portfolioItemsPerPage, filteredAssets.length)} of {filteredAssets.length} buildings
+                                    {/* Portfolio Table content moved here */}
+                                    {data.portfolio_stats.assets && data.portfolio_stats.assets.length > 0 ? (
+                                        <div className="space-y-4">
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <Search className="h-4 w-4 text-slate-400 dark:text-slate-600" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search buildings..."
+                                                    value={portfolioSearch}
+                                                    onChange={(e) => {
+                                                        setPortfolioSearch(e.target.value);
+                                                        setPortfolioPage(1);
+                                                    }}
+                                                    className="block w-full pl-9 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-md leading-5 bg-white dark:bg-slate-700 text-sm"
+                                                />
                                             </div>
-                                            {totalPages > 1 && (
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => setPortfolioPage(prev => Math.max(1, prev - 1))}
-                                                        disabled={portfolioPage === 1}
-                                            className="inline-flex items-center px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronLeft className="w-4 h-4" />
-                                        </button>
-                                        <div className="flex items-center gap-1">
-                                            {Array.from({ length: totalPages }).map((_, i) => (
+                                            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-slate-700 rounded-lg">
+                                                <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700">
+                                                    <thead className="bg-slate-50 dark:bg-slate-900">
+                                                        <tr>
+                                                            <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
+                                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
+                                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Age</th>
+                                                            <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                                                        {data.portfolio_stats.assets
+                                                            .filter(a => portfolioSearch ? (a.name?.toLowerCase().includes(portfolioSearch.toLowerCase()) || a.address?.toLowerCase().includes(portfolioSearch.toLowerCase())) : true)
+                                                            .slice((portfolioPage - 1) * portfolioItemsPerPage, portfolioPage * portfolioItemsPerPage)
+                                                            .map((asset, idx) => (
+                                                                <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                                                                    <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
+                                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
+                                                                    <td className="whitespace-nowrap px-3 py-3 text-sm">{asset.age ? `${asset.age} yrs` : '-'}</td>
+                                                                    <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
+                                                                        <button onClick={() => handleEditBuilding(data.portfolio_stats.assets.indexOf(asset))} className="text-indigo-600 mr-3"><Pencil className="w-4 h-4" /></button>
+                                                                        <button onClick={() => handleDeleteBuilding(data.portfolio_stats.assets.indexOf(asset))} className="text-rose-600"><Trash2 className="w-4 h-4" /></button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
+                                            <p className="text-sm text-slate-500">No buildings listed.</p>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {activeTab === 'history' && (
+                                <div className="space-y-6">
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Log New Activity</h4>
+                                        <div className="flex gap-4 mb-3">
+                                            {['call', 'email', 'meeting', 'note'].map(type => (
                                                 <button
-                                                    key={i + 1}
-                                                    onClick={() => setPortfolioPage(i + 1)}
+                                                    key={type}
+                                                    onClick={() => setNewActivity(prev => ({ ...prev, type }))}
                                                     className={clsx(
-                                                        "inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-medium transition-colors",
-                                                        portfolioPage === i + 1
-                                                            ? "bg-indigo-600 text-white"
-                                                            : "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                                                        "px-3 py-1 text-xs font-medium rounded-full capitalize transition-all",
+                                                        newActivity.type === type
+                                                            ? "bg-indigo-600 text-white shadow-sm"
+                                                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50"
                                                     )}
                                                 >
-                                                    {i + 1}
+                                                    {type}
                                                 </button>
                                             ))}
                                         </div>
-                                        <button
-                                            onClick={() => setPortfolioPage(prev => Math.min(totalPages, prev + 1))}
-                                            disabled={portfolioPage === totalPages}
-                                            className="inline-flex items-center px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronRight className="w-4 h-4" />
-                                        </button>
+                                        <textarea
+                                            value={newActivity.notes}
+                                            onChange={(e) => setNewActivity(prev => ({ ...prev, notes: e.target.value }))}
+                                            placeholder="What happened? (e.g., 'Spoke with John about the upgrade plan')"
+                                            className="w-full text-sm border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 mb-3"
+                                            rows={2}
+                                        />
+                                        <div className="flex justify-end">
+                                            <button
+                                                onClick={() => {
+                                                    if (newActivity.notes.trim()) {
+                                                        addActivityLog(data.id, newActivity);
+                                                        setNewActivity({ type: 'call', notes: '' });
+                                                    }
+                                                }}
+                                                disabled={!newActivity.notes.trim()}
+                                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                                            >
+                                                Log Activity
+                                            </button>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                        )})()}
-                    </div>
-                ) : (
-                    <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
-                                <Building className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500" />
-                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No buildings listed.</p>
-                                <button
-                                    onClick={handleAddBuilding}
-                                    className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                                >
-                                    Add your first building
-                                </button>
-                            </div>
-                        )}
+
+                                    <div className="space-y-4">
+                                        {(data.activities || []).length === 0 ? (
+                                            <p className="text-center py-4 text-sm text-slate-500">No activity history yet.</p>
+                                        ) : (
+                                            data.activities.map((activity, idx) => (
+                                                <div key={activity.id} className="relative pl-6 pb-6 border-l border-slate-200 dark:border-slate-700 last:pb-0">
+                                                    <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-sm shadow-indigo-200" />
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{activity.type}</span>
+                                                        <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(activity.timestamp).toLocaleString()}</span>
+                                                    </div>
+                                                    <p className="text-sm text-slate-700 dark:text-slate-300">{activity.notes}</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'tasks' && (
+                                <div className="space-y-6">
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Add New Task</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                            <input
+                                                type="text"
+                                                value={newTask.title}
+                                                onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+                                                placeholder="Task description (e.g., 'Follow up on 1/10')"
+                                                className="text-sm border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                            />
+                                            <input
+                                                type="date"
+                                                value={newTask.dueDate}
+                                                onChange={(e) => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
+                                                className="text-sm border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                            />
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <button
+                                                onClick={() => {
+                                                    if (newTask.title.trim() && newTask.dueDate) {
+                                                        addTask(data.id, newTask);
+                                                        setNewTask({ title: '', dueDate: '' });
+                                                    }
+                                                }}
+                                                disabled={!newTask.title.trim() || !newTask.dueDate}
+                                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                                            >
+                                                Add Task
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {(data.tasks || []).length === 0 ? (
+                                            <p className="text-center py-4 text-sm text-slate-500">No tasks assigned.</p>
+                                        ) : (
+                                            data.tasks.map(task => (
+                                                <div key={task.id} className={clsx(
+                                                    "flex items-center justify-between p-3 rounded-lg border transition-all",
+                                                    task.status === 'completed'
+                                                        ? "bg-slate-50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-800 opacity-60"
+                                                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-sm"
+                                                )}>
+                                                    <div className="flex items-center gap-3">
+                                                        <button
+                                                            onClick={() => updateTask(data.id, task.id, { status: task.status === 'completed' ? 'pending' : 'completed' })}
+                                                            className={clsx(
+                                                                "w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                                                                task.status === 'completed' ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-300 dark:border-slate-600"
+                                                            )}
+                                                        >
+                                                            {task.status === 'completed' && <CheckSquare className="w-3.5 h-3.5" />}
+                                                        </button>
+                                                        <div>
+                                                            <p className={clsx("text-sm font-medium", task.status === 'completed' ? "line-through text-slate-500" : "text-slate-900 dark:text-white")}>
+                                                                {task.title}
+                                                            </p>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <Calendar className="w-3 h-3 text-slate-400" />
+                                                                <span className={clsx(
+                                                                    "text-[10px]",
+                                                                    !task.status === 'completed' && new Date(task.dueDate) < new Date() ? "text-rose-500 font-bold" : "text-slate-400"
+                                                                )}>
+                                                                    Due: {new Date(task.dueDate).toLocaleDateString()}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button onClick={() => deleteTask(data.id, task.id)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">

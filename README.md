@@ -4,12 +4,12 @@ A modern React-based CRM application for property management companies to track 
 
 ## Features
 
-- 🗺️ **Territory Mapping** - Interactive map with building locations and company headquarters
-- 📊 **Dashboard** - Real-time analytics and activity feed
-- 👥 **Prospect Management** - Track and manage property management companies
-- 🏢 **Portfolio Tracking** - View and manage building portfolios
-- 📝 **Custom Lists** - Create and organize prospect lists
-- 🔍 **Advanced Search & Filters** - Find prospects quickly
+-  **Territory Mapping** - Interactive map with building locations and company headquarters
+-  **Dashboard** - Real-time analytics and activity feed
+-  **Prospect Management** - Track and manage property management companies
+-  **Portfolio Tracking** - View and manage building portfolios
+-  **Custom Lists** - Create and organize prospect lists
+-  **Advanced Search & Filters** - Find prospects quickly
 
 ## Tech Stack
 

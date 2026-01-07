@@ -1,38 +1,40 @@
 import React, { useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Building2, Users, CheckCircle, Clock, ArrowUpRight } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, FunnelChart, Funnel, LabelList, Cell } from 'recharts';
+import { Building2, Users, CheckCircle, Clock, ArrowUpRight, DollarSign, Target, AlertCircle } from 'lucide-react';
 
 const Dashboard = () => {
-    const { prospects, activityFeed } = useApp();
+    const { prospects, activityFeed, PIPELINE_STAGES } = useApp();
 
     const stats = useMemo(() => {
         const total = prospects.length;
-        const portfolioReach = prospects.reduce((acc, p) => acc + (p.portfolio_stats?.total_buildings || 0), 0);
-        const validContacts = prospects.filter(p => p.contact_info?.email && p.contact_info?.phone).length;
 
-        // Activity in last 7 days
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        const weeklyActivity = prospects.filter(p => new Date(p.last_contact_date) > oneWeekAgo).length;
+        // Mock Pipeline Value: Each building is ~50k in potential value
+        const totalBuildings = prospects.reduce((acc, p) => acc + (p.portfolio_stats?.total_buildings || 0), 0);
+        const pipelineValue = totalBuildings * 50000;
 
-        return { total, portfolioReach, contactCoverage: Math.round((validContacts / total) * 100), weeklyActivity };
+        // Conversion Rate: (Closed Won / Total Concluded)
+        const won = prospects.filter(p => p.status === 'closed_won').length;
+        const lost = prospects.filter(p => p.status === 'closed_lost').length;
+        const conversionRate = (won + lost) > 0 ? Math.round((won / (won + lost)) * 100) : 0;
+
+        // Overdue Tasks
+        const now = new Date();
+        const overdueTasks = prospects.reduce((acc, p) => {
+            const count = (p.tasks || []).filter(t => t.status === 'pending' && new Date(t.dueDate) < now).length;
+            return acc + count;
+        }, 0);
+
+        return { total, pipelineValue, conversionRate, overdueTasks };
     }, [prospects]);
 
-    const dataQuality = useMemo(() => {
-        const total = prospects.length;
-        if (total === 0) return { email: 0, phone: 0, website: 0 };
-
-        const hasEmail = prospects.filter(p => p.contact_info?.email).length;
-        const hasPhone = prospects.filter(p => p.contact_info?.phone).length;
-        const hasWebsite = prospects.filter(p => p.website).length;
-
-        return {
-            email: Math.round((hasEmail / total) * 100),
-            phone: Math.round((hasPhone / total) * 100),
-            website: Math.round((hasWebsite / total) * 100)
-        };
-    }, [prospects]);
+    const funnelData = useMemo(() => {
+        return PIPELINE_STAGES.map((stage, index) => ({
+            name: stage.label,
+            value: prospects.filter(p => p.status === stage.id).length,
+            fill: stage.id === 'closed_won' ? '#10b981' : stage.id === 'closed_lost' ? '#ef4444' : '#6366f1'
+        })).filter(s => s.value > 0 || ['new', 'contacted', 'negotiating', 'closed_won'].includes(s.name.toLowerCase().replace(' ', '_')));
+    }, [prospects, PIPELINE_STAGES]);
 
     const cityData = useMemo(() => {
         const counts = {};
@@ -40,17 +42,20 @@ const Dashboard = () => {
             const city = p.address?.city || 'Unknown';
             counts[city] = (counts[city] || 0) + 1;
         });
-        return Object.entries(counts).map(([name, count]) => ({ name, count }));
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count }));
     }, [prospects]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 dark:bg-slate-950 min-h-screen">
             {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <KpiCard title="Total Prospects" value={stats.total} icon={Building2} color="text-indigo-600" bg="bg-indigo-50" />
-                <KpiCard title="Portfolio Reach" value={stats.portfolioReach} icon={ArrowUpRight} label="Buildings" color="text-emerald-600" bg="bg-emerald-50" />
-                <KpiCard title="Contact Coverage" value={`${stats.contactCoverage}%`} icon={Users} color="text-blue-600" bg="bg-blue-50" />
-                <KpiCard title="7-Day Activity" value={stats.weeklyActivity} icon={Clock} color="text-amber-600" bg="bg-amber-50" />
+                <KpiCard title="Pipeline Value" value={`$${(stats.pipelineValue / 1000000).toFixed(1)}M`} icon={DollarSign} color="text-emerald-600" bg="bg-emerald-50" />
+                <KpiCard title="Total Prospects" value={stats.total} icon={Users} color="text-indigo-600" bg="bg-indigo-50" />
+                <KpiCard title="Win Rate" value={`${stats.conversionRate}%`} icon={Target} color="text-blue-600" bg="bg-blue-50" />
+                <KpiCard title="Overdue Tasks" value={stats.overdueTasks} icon={AlertCircle} color={stats.overdueTasks > 0 ? "text-rose-600" : "text-slate-400"} bg={stats.overdueTasks > 0 ? "bg-rose-50" : "bg-slate-50"} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -79,32 +84,47 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Data Quality & Charts */}
+                {/* Funnel & City Chart */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Data Quality */}
+                    {/* Conversion Funnel */}
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
                         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
-                            <CheckCircle className="w-5 h-5 mr-2 text-emerald-500" />
-                            Data Quality Score
+                            <Target className="w-5 h-5 mr-2 text-indigo-500" />
+                            Conversion Funnel
                         </h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <QualityBar label="Email Availability" percent={dataQuality.email} color="bg-indigo-500" />
-                            <QualityBar label="Phone Availability" percent={dataQuality.phone} color="bg-emerald-500" />
-                            <QualityBar label="Website Links" percent={dataQuality.website} color="bg-blue-500" />
+                        <div className="h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <FunnelChart>
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                                        itemStyle={{ color: '#fff' }}
+                                    />
+                                    <Funnel
+                                        data={funnelData}
+                                        dataKey="value"
+                                        nameKey="name"
+                                    >
+                                        <LabelList position="right" fill="#94a3b8" dataKey="name" stroke="none" />
+                                        {funnelData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Funnel>
+                                </FunnelChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
 
                     {/* City Breakdown Chart */}
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors">
-                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Prospect Density by City</h2>
+                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Top Regions by Density</h2>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={cityData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#475569" />
-                                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} />
-                                    <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} allowDecimals={false} />
+                                <BarChart data={cityData} layout="vertical">
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#475569" />
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 12, fill: '#94a3b8' }} width={100} />
                                     <Tooltip cursor={{ fill: '#1e293b' }} contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#e2e8f0' }} />
-                                    <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={40} />
+                                    <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

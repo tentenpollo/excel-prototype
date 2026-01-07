@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 const transformSupabaseRow = (row, prospectAssets = []) => {
     // Use provided assets or try to parse portfolio_assets
     let assets = prospectAssets && prospectAssets.length > 0 ? prospectAssets : [];
-    
+
     if (assets.length === 0 && row.portfolio_assets) {
         try {
             assets = Array.isArray(row.portfolio_assets) ? row.portfolio_assets : JSON.parse(row.portfolio_assets);
@@ -13,7 +13,7 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
             assets = [];
         }
     }
-    
+
     // Compute per-asset age from year_built if not present
     const currentYear = new Date().getFullYear();
     assets = assets.map(a => ({
@@ -24,14 +24,14 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
 
     // Calculate average age from assets
     const assetsWithAge = assets.filter(a => a.year_built);
-    const avgAge = assetsWithAge.length > 0 
+    const avgAge = assetsWithAge.length > 0
         ? Math.round(assetsWithAge.reduce((sum, a) => sum + (a.age || 0), 0) / assetsWithAge.length)
         : null;
-    
+
     // Calculate lead score (0-100)
     // Factors: building age (50%), portfolio size (25%), old buildings count (25%)
     let leadScore = 0;
-    
+
     // Age score: higher age = higher score (50 points max)
     if (avgAge) {
         if (avgAge >= 50) leadScore += 50;
@@ -40,7 +40,7 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
         else if (avgAge >= 20) leadScore += 20;
         else leadScore += 10;
     }
-    
+
     // Portfolio size score: more buildings = higher score (25 points max)
     const buildingCount = assets.length;
     if (buildingCount >= 50) leadScore += 25;
@@ -48,19 +48,19 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
     else if (buildingCount >= 10) leadScore += 15;
     else if (buildingCount >= 5) leadScore += 10;
     else if (buildingCount > 0) leadScore += 5;
-    
+
     // Old buildings count score (25 points max)
     const oldBuildingsCount = assets.filter(a => a.age && a.age >= 40).length;
     if (oldBuildingsCount >= 20) leadScore += 25;
     else if (oldBuildingsCount >= 10) leadScore += 20;
     else if (oldBuildingsCount >= 5) leadScore += 15;
     else if (oldBuildingsCount > 0) leadScore += 10;
-    
+
     // Determine priority tier
     let priority = 'cold';
     if (leadScore >= 70) priority = 'hot';
     else if (leadScore >= 50) priority = 'warm';
-    
+
     return {
         id: row.id,
         company_name: row.company_name,
@@ -94,7 +94,10 @@ const transformSupabaseRow = (row, prospectAssets = []) => {
         website: row.website || '',
         portfolio_url: row.portfolio_url || '',
         last_contact_date: row.created_at || null,
-        raw: row.raw
+        notes: row.notes || '',
+        activities: [], // Will be hydrated from local storage for prototype
+        tasks: [],      // Will be hydrated from local storage for prototype
+        raw: row
     };
 };
 
@@ -111,7 +114,7 @@ export const AppProvider = ({ children }) => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [colorMode, setColorMode] = useState('Status'); // 'Status' or 'Type'
-    
+
     // Theme state (light or dark)
     const [theme, setTheme] = useState(() => {
         const saved = localStorage.getItem('theme');
@@ -174,9 +177,19 @@ export const AppProvider = ({ children }) => {
                 if (prospectsData.length > 0) {
                     const transformed = prospectsData.map(prospect => {
                         const prospectAssets = assetsData.filter(asset => asset.prospect_id === prospect.id);
-                        return transformSupabaseRow(prospect, prospectAssets);
+                        const base = transformSupabaseRow(prospect, prospectAssets);
+
+                        // Hydrate activities and tasks from localStorage for the prototype
+                        const savedActivities = JSON.parse(localStorage.getItem(`activities_${prospect.id}`) || '[]');
+                        const savedTasks = JSON.parse(localStorage.getItem(`tasks_${prospect.id}`) || '[]');
+
+                        return {
+                            ...base,
+                            activities: savedActivities,
+                            tasks: savedTasks
+                        };
                     });
-                    
+
                     setProspects(transformed);
                     localStorage.setItem('prospects', JSON.stringify(transformed));
                 } else {
@@ -208,6 +221,16 @@ export const AppProvider = ({ children }) => {
         localStorage.setItem('customLists', JSON.stringify(customLists));
     }, [customLists]);
 
+    // Pipeline Stages Configuration
+    const PIPELINE_STAGES = [
+        { id: 'new', label: 'New', color: 'bg-emerald-100 text-emerald-800' },
+        { id: 'contacted', label: 'Contacted', color: 'bg-blue-100 text-blue-800' },
+        { id: 'interested', label: 'Interested', color: 'bg-amber-100 text-amber-800' },
+        { id: 'negotiating', label: 'Negotiating', color: 'bg-indigo-100 text-indigo-800' },
+        { id: 'closed_won', label: 'Closed Won', color: 'bg-green-100 text-green-800' },
+        { id: 'closed_lost', label: 'Closed Lost', color: 'bg-rose-100 text-rose-800' }
+    ];
+
     const addActivity = (message) => {
         const newActivity = {
             id: Date.now(),
@@ -236,7 +259,7 @@ export const AppProvider = ({ children }) => {
             if (updates.address?.lat !== undefined) supabaseUpdates.lat = updates.address.lat;
             if (updates.address?.lng !== undefined) supabaseUpdates.lng = updates.address.lng;
             if (updates.website !== undefined) supabaseUpdates.website = updates.website;
-            
+
             // Handle portfolio assets - update both the JSON field and the assets table
             let assetsToSync = null;
             if (updates.portfolio_stats?.assets) {
@@ -252,9 +275,9 @@ export const AppProvider = ({ children }) => {
 
                 // Whitelist columns to avoid sending unexpected fields that may cause 400 errors
                 const allowedColumns = new Set([
-                    'company_name','status','contact_name','contact_title',
-                    'email','phone','fax','city','province','street','postal_code','country',
-                    'lat','lng','website','portfolio_assets','portfolio_total_buildings'
+                    'company_name', 'status', 'contact_name', 'contact_title',
+                    'email', 'phone', 'fax', 'city', 'province', 'street', 'postal_code', 'country',
+                    'lat', 'lng', 'website', 'portfolio_assets', 'portfolio_total_buildings'
                 ]);
 
                 const payload = {};
@@ -337,10 +360,10 @@ export const AppProvider = ({ children }) => {
                     }
                     return p;
                 });
-                
+
                 // Cache to localStorage
                 localStorage.setItem('prospects', JSON.stringify(newProspects));
-                
+
                 return newProspects;
             });
 
@@ -349,6 +372,65 @@ export const AppProvider = ({ children }) => {
             console.error('Update prospect failed:', error);
             return Promise.reject(error);
         }
+    };
+
+    const addActivityLog = (prospectId, activity) => {
+        const newActivity = {
+            id: `act_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            ...activity
+        };
+
+        setProspects(prev => prev.map(p => {
+            if (p.id === prospectId) {
+                const updatedActivities = [newActivity, ...(p.activities || [])];
+                localStorage.setItem(`activities_${prospectId}`, JSON.stringify(updatedActivities));
+                return { ...p, activities: updatedActivities, last_contact_date: newActivity.timestamp };
+            }
+            return p;
+        }));
+
+        addActivity(`Logged ${activity.type} for prospect`);
+    };
+
+    const addTask = (prospectId, task) => {
+        const newTask = {
+            id: `task_${Date.now()}`,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            ...task
+        };
+
+        setProspects(prev => prev.map(p => {
+            if (p.id === prospectId) {
+                const updatedTasks = [newTask, ...(p.tasks || [])];
+                localStorage.setItem(`tasks_${prospectId}`, JSON.stringify(updatedTasks));
+                return { ...p, tasks: updatedTasks };
+            }
+            return p;
+        }));
+    };
+
+    const updateTask = (prospectId, taskId, updates) => {
+        setProspects(prev => prev.map(p => {
+            if (p.id === prospectId) {
+                const updatedTasks = p.tasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
+                localStorage.setItem(`tasks_${prospectId}`, JSON.stringify(updatedTasks));
+                return { ...p, tasks: updatedTasks };
+            }
+            return p;
+        }));
+    };
+
+    const deleteTask = (prospectId, taskId) => {
+        setProspects(prev => prev.map(p => {
+            if (p.id === prospectId) {
+                const updatedTasks = p.tasks.filter(t => t.id !== taskId);
+                localStorage.setItem(`tasks_${prospectId}`, JSON.stringify(updatedTasks));
+                return { ...p, tasks: updatedTasks };
+            }
+            return p;
+        }));
     };
 
     const addProspect = (prospect) => {
@@ -482,7 +564,7 @@ export const AppProvider = ({ children }) => {
                     const prospectAssets = assetsData.filter(asset => asset.prospect_id === prospect.id);
                     return transformSupabaseRow(prospect, prospectAssets);
                 });
-                
+
                 setProspects(transformed);
                 localStorage.setItem('prospects', JSON.stringify(transformed));
                 return true;
@@ -518,7 +600,12 @@ export const AppProvider = ({ children }) => {
         activityFeed,
         getStatusColor,
         getStatusColorMap,
-        addActivity // Exported mainly for manual event log if needed, but updateProspect handles it
+        addActivity, // Exported mainly for manual event log if needed, but updateProspect handles it
+        PIPELINE_STAGES,
+        addActivityLog,
+        addTask,
+        updateTask,
+        deleteTask
     };
 
     return (
