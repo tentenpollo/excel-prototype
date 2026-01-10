@@ -11,7 +11,7 @@ const BuildingsList = () => {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 25;
-    
+
     const [ageFilter, setAgeFilter] = useState('all'); // all, under-20, 20-30, 30-50, 50plus
     const [yearDataFilter, setYearDataFilter] = useState('all'); // all, with-data, no-data
     const [showFilters, setShowFilters] = useState(false);
@@ -20,7 +20,8 @@ const BuildingsList = () => {
         maxAge: '',
         minYear: '',
         maxYear: '',
-        prospect: ''
+        prospect: '',
+        propertyType: ''
     });
 
     const allBuildings = useMemo(() => {
@@ -35,7 +36,8 @@ const BuildingsList = () => {
                         age: age,
                         prospect_id: prospect.id,
                         prospect_name: prospect.company_name,
-                        prospect_city: prospect.address.city
+                        prospect_city: prospect.address.city,
+                        property_type: asset.property_type
                     });
                 });
             }
@@ -81,6 +83,11 @@ const BuildingsList = () => {
             data = data.filter(b => b.prospect_id === filters.prospect);
         }
 
+        // Property Type filter
+        if (filters.propertyType) {
+            data = data.filter(b => b.property_type === filters.propertyType);
+        }
+
         // Sort
         if (sortConfig.key) {
             data.sort((a, b) => {
@@ -124,7 +131,7 @@ const BuildingsList = () => {
     const hasActiveFilters = filters.minAge || filters.maxAge || filters.minYear || filters.maxYear || filters.prospect;
 
     const clearFilters = () => {
-        setFilters({ minAge: '', maxAge: '', minYear: '', maxYear: '', prospect: '' });
+        setFilters({ minAge: '', maxAge: '', minYear: '', maxYear: '', prospect: '', propertyType: '' });
         setCurrentPage(1);
     };
 
@@ -136,12 +143,13 @@ const BuildingsList = () => {
     }, [filteredData, currentPage, itemsPerPage]);
 
     const handleExport = () => {
-        const headers = ["Building Name", "Address", "Year Built", "Age (Years)", "Prospect", "City"];
+        const headers = ["Building Name", "Address", "Type", "Year Built", "Age (Years)", "Prospect", "City"];
         const csvRows = [
             headers.join(','),
             ...filteredData.map(b => [
                 `"${b.name || ''}"`,
                 `"${b.address || ''}"`,
+                `"${b.property_type || ''}"`,
                 b.year_built || '',
                 b.age || '',
                 `"${b.prospect_name || ''}"`,
@@ -306,6 +314,26 @@ const BuildingsList = () => {
                                 ))}
                             </select>
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Property Type</label>
+                            <select
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                value={filters.propertyType}
+                                onChange={(e) => {
+                                    setFilters({ ...filters, propertyType: e.target.value });
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <option value="">All Types</option>
+                                <option value="Single-Family Home">Single-Family Home</option>
+                                <option value="Condominium">Condominium</option>
+                                <option value="Townhouse">Townhouse</option>
+                                <option value="Multi-Family (Apartment)">Multi-Family (Apartment)</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Industrial">Industrial</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
                     </div>
 
                     {hasActiveFilters && (
@@ -363,6 +391,11 @@ const BuildingsList = () => {
                                 >
                                     <div className="flex items-center">Address {getSortIcon('address')}</div>
                                 </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
+                                    onClick={() => requestSort('property_type')}
+                                >
+                                    <div className="flex items-center">Type {getSortIcon('property_type')}</div>
+                                </th>
                                 <th
                                     className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                                     onClick={() => requestSort('year_built')}
@@ -399,6 +432,9 @@ const BuildingsList = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-sm text-slate-600 dark:text-slate-400 max-w-xs truncate">{building.address || '-'}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        {building.property_type || '-'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                                         {building.year_built || '-'}

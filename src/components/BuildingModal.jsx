@@ -22,7 +22,7 @@ const BuildingModal = ({ isOpen, onClose, onSave, initialData }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         // Validation
         if (!formData.name || formData.name.trim() === '') {
             alert('Building name is required');
@@ -36,7 +36,7 @@ const BuildingModal = ({ isOpen, onClose, onSave, initialData }) => {
             alert('Number of units cannot be negative');
             return;
         }
-        
+
         onSave(formData);
         onClose();
     };
@@ -104,10 +104,27 @@ const BuildingModal = ({ isOpen, onClose, onSave, initialData }) => {
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Age (Years)</label>
                             <div className="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border bg-gray-50 text-gray-600">
-                                {formData.year_built 
-                                    ? `${new Date().getFullYear() - formData.year_built} years old` 
+                                {formData.year_built
+                                    ? `${new Date().getFullYear() - formData.year_built} years old`
                                     : 'Enter year built to see age'}
                             </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Property Type</label>
+                            <select
+                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 border bg-white"
+                                value={formData.property_type || ''}
+                                onChange={e => setFormData({ ...formData, property_type: e.target.value })}
+                            >
+                                <option value="">Select type...</option>
+                                <option value="Single-Family Home">Single-Family Home</option>
+                                <option value="Condominium">Condominium</option>
+                                <option value="Townhouse">Townhouse</option>
+                                <option value="Multi-Family (Apartment)">Multi-Family (Apartment)</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Industrial">Industrial</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                         <div className="mt-5 sm:mt-6">
                             <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">

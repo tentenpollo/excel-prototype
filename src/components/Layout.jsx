@@ -37,30 +37,30 @@ const Layout = () => {
 
             {/* Navbar */}
             <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 transition-colors duration-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
+                <div className="w-full px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-14">
                         <div className="flex">
                             {/* Logo */}
                             <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate('/')}>
-                                <span className="text-xl font-bold text-indigo-600 tracking-tight">Territory<span className="text-slate-900 dark:text-white">Intel</span></span>
+                                <span className="text-lg font-bold text-indigo-600 tracking-tight">Territory<span className="text-slate-900 dark:text-white">Intel</span></span>
                             </div>
 
                             {/* Desktop Nav */}
-                            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <div className="hidden sm:ml-6 sm:flex sm:space-x-6">
                                 {navItems.map((item) => (
                                     <NavLink
                                         key={item.to}
                                         to={item.to}
                                         className={({ isActive }) =>
                                             clsx(
-                                                'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors',
+                                                'inline-flex items-center px-1 pt-1 border-b-2 text-xs font-medium transition-colors',
                                                 isActive
                                                     ? 'border-indigo-500 text-slate-900 dark:text-white'
                                                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300'
                                             )
                                         }
                                     >
-                                        <item.icon className="w-4 h-4 mr-2" />
+                                        <item.icon className="w-3.5 h-3.5 mr-1.5" />
                                         {item.label}
                                     </NavLink>
                                 ))}
@@ -78,10 +78,10 @@ const Layout = () => {
                                     key={list.id}
                                     to={`/lists/${list.id}`}
                                     className={({ isActive }) =>
-                                        clsx("text-sm transition-colors flex items-center", isActive ? "text-indigo-700 dark:text-indigo-400 font-medium" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200")
+                                        clsx("text-xs transition-colors flex items-center", isActive ? "text-indigo-700 dark:text-indigo-400 font-medium" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200")
                                     }
                                 >
-                                    <FolderOpen className="w-3 h-3 mr-1" />
+                                    <FolderOpen className="w-2.5 h-2.5 mr-1" />
                                     {list.name}
                                 </NavLink>
                             ))}
@@ -91,24 +91,24 @@ const Layout = () => {
                         {/* Settings & Mobile Menu Button */}
                         <div className="flex items-center ml-auto relative">
                             <button
-                                className="p-2 ml-2 text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 transition-colors relative"
+                                className="p-1.5 ml-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 transition-colors relative"
                                 title="Notifications"
                             >
-                                <Bell className="w-5 h-5" />
-                                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                                <Bell className="w-4 h-4" />
+                                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                             </button>
 
                             <button
                                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                                className="p-2 ml-2 text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
+                                className="p-1.5 ml-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
                                 title="Toggle theme"
                             >
-                                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                             </button>
 
                             {/* Settings Dropdown */}
                             {isSettingsOpen && (
-                                <div className="absolute right-0 top-16 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50">
+                                <div className="absolute right-0 top-14 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50">
                                     <button
                                         onClick={() => {
                                             toggleTheme();

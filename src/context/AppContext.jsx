@@ -331,6 +331,7 @@ export const AppProvider = ({ children }) => {
                         address: asset.address || asset.Address || '',
                         lat: asset.lat !== undefined ? (Number.isFinite(Number(asset.lat)) ? Number(asset.lat) : null) : null,
                         lng: asset.lng !== undefined ? (Number.isFinite(Number(asset.lng)) ? Number(asset.lng) : null) : null,
+                        property_type: asset.property_type || '',
                         raw: JSON.stringify(asset)
                     }));
 

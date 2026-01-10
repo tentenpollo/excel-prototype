@@ -50,11 +50,11 @@ const BuildingDetail = () => {
         if (found) {
             const currentYear = new Date().getFullYear();
             const age = found.age || (found.year_built ? currentYear - found.year_built : null);
-            
+
             // Use building coordinates or fallback to HQ coordinates
             const lat = found.lat || found.latitude || parentProspect?.address?.lat || null;
             const lng = found.lng || found.longitude || parentProspect?.address?.lng || null;
-            
+
             setBuilding({
                 ...found,
                 age: age,
@@ -67,7 +67,8 @@ const BuildingDetail = () => {
             await loadNotes(buildingId);
             await loadPhotos(buildingId);
         } else {
-            console.error('Building not found in prospects data');}
+            console.error('Building not found in prospects data');
+        }
     };
 
     const loadNotes = async (assetId) => {
@@ -88,9 +89,9 @@ const BuildingDetail = () => {
         const { data, error } = await supabase.storage
             .from('building-photos')
             .list(`asset_${assetId}`);
-        
+
         console.log('Loading photos for asset:', assetId, { data, error });
-        
+
         if (data && !error) {
             const photoUrls = data
                 .filter(file => file.name !== '.emptyFolderPlaceholder') // Filter out placeholder
@@ -139,11 +140,11 @@ const BuildingDetail = () => {
 
         console.log('Uploading photos for building:', building.id);
         setUploading(true);
-        
+
         for (const file of files) {
             const fileName = `${Date.now()}-${file.name}`;
             console.log('Uploading file:', fileName);
-            
+
             const { data, error } = await supabase.storage
                 .from('building-photos')
                 .upload(`asset_${building.id}/${fileName}`, file);
@@ -155,7 +156,7 @@ const BuildingDetail = () => {
                 console.log('Photo uploaded successfully:', data);
             }
         }
-        
+
         await loadPhotos(building.id);
         setUploading(false);
     };
@@ -220,7 +221,7 @@ const BuildingDetail = () => {
                     >
                         <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     </button>
-                    
+
                     {/* Profile Photo */}
                     {photos.length > 0 ? (
                         <div className="relative group flex-shrink-0">
@@ -238,7 +239,7 @@ const BuildingDetail = () => {
                             <Building className="w-10 h-10 text-slate-400 dark:text-slate-500" />
                         </div>
                     )}
-                    
+
                     <div className="flex-1">
                         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{building.name || 'Untitled Building'}</h1>
                         <p className="text-slate-600 dark:text-slate-400 mt-1">{building.address}</p>
@@ -280,11 +281,10 @@ const BuildingDetail = () => {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
-                            activeTab === tab
+                        className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === tab
                                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
@@ -306,6 +306,10 @@ const BuildingDetail = () => {
                         <div>
                             <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Year Built</p>
                             <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">{building.year_built || 'Unknown'}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Property Type</p>
+                            <p className="text-lg text-slate-900 dark:text-white font-medium mt-1">{building.property_type || '-'}</p>
                         </div>
                         <div>
                             <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold">Age</p>
@@ -449,7 +453,8 @@ const BuildingDetail = () => {
                     address: building.address || '',
                     units: building.units || 0,
                     year_built: building.year_built || null,
-                    age: building.age || null
+                    age: building.age || null,
+                    property_type: building.property_type || ''
                 }}
             />
 

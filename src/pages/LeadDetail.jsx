@@ -230,6 +230,7 @@ const LeadDetail = () => {
                                                 <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
                                                 <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
                                                 <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Units</th>
+                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Type</th>
                                                 <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
                                             </tr>
                                         </thead>
@@ -239,6 +240,7 @@ const LeadDetail = () => {
                                                     <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
                                                     <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
                                                     <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.units}</td>
+                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.property_type || '-'}</td>
                                                     <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
                                                         <button onClick={() => { handleEditBuilding(idx); setIsPortfolioModalOpen(false); }} className="text-indigo-600 hover:text-indigo-900 mr-3">
                                                             <Pencil className="w-4 h-4" />
@@ -584,6 +586,7 @@ const LeadDetail = () => {
                                                             <th className="py-2 pl-4 pr-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Property Name</th>
                                                             <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Address</th>
                                                             <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Age</th>
+                                                            <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Type</th>
                                                             <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
                                                         </tr>
                                                     </thead>
@@ -596,6 +599,7 @@ const LeadDetail = () => {
                                                                     <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-slate-900 dark:text-white">{asset.name}</td>
                                                                     <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.address}</td>
                                                                     <td className="whitespace-nowrap px-3 py-3 text-sm">{asset.age ? `${asset.age} yrs` : '-'}</td>
+                                                                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500 dark:text-slate-400">{asset.property_type || '-'}</td>
                                                                     <td className="whitespace-nowrap px-3 py-3 text-right text-sm">
                                                                         <button onClick={() => handleEditBuilding(data.portfolio_stats.assets.indexOf(asset))} className="text-indigo-600 mr-3"><Pencil className="w-4 h-4" /></button>
                                                                         <button onClick={() => handleDeleteBuilding(data.portfolio_stats.assets.indexOf(asset))} className="text-rose-600"><Trash2 className="w-4 h-4" /></button>
